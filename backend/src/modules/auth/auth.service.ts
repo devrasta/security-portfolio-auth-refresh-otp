@@ -63,7 +63,11 @@ export class AuthService {
       this.jwtService.generateRefreshToken(user.id, tokenFamily),
     ]);
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      user: { id: user.id, email: user.email, name: user.name },
+    };
   }
 
   async generateRefreshToken(userId: string, tokenFamily: string) {
@@ -122,6 +126,7 @@ export class AuthService {
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
+      user: { id: user.id, name: user.name },
     };
   }
 

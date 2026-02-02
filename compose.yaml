@@ -60,7 +60,7 @@ services:
       - auth-internal
       - traefik-public
     ports:
-      - "3001:3000"
+      - "3000:3000"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"

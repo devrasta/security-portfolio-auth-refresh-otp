@@ -11,10 +11,11 @@ export interface RegisterCredentials {
 
 export interface AuthResponse {
   accessToken: string
+  user: User
 }
 
 export interface User {
-  userId: string
+  id: string
   email: string
   name: string
 }
@@ -44,14 +45,10 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 
   try {
     const response = await fetch(url, config)
-
-    // Gestion des erreurs HTTP
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new ApiError(response.status, errorData.message || 'Une erreur est survenue')
     }
-
-    // Retourne les données
     return await response.json()
   } catch (error) {
     if (error instanceof ApiError) {
@@ -66,10 +63,6 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 // ════════════════════════════════════════════════════════
 
 export const authApi = {
-  /**
-   * Login
-   * Le refresh token est automatiquement stocké dans un cookie httpOnly
-   */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     return fetchApi<AuthResponse>('/auth/login', {
       method: 'POST',
@@ -77,9 +70,6 @@ export const authApi = {
     })
   },
 
-  /**
-   * Register
-   */
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
     return fetchApi<AuthResponse>('/auth/register', {
       method: 'POST',

@@ -30,13 +30,17 @@ export class UsersService {
     const createdUser = await this.prisma.user.create({
       data: user,
       select: {
-        id: true,
         email: true,
         name: true,
-        createdAt: true,
       },
     });
 
     return createdUser;
+  }
+
+  async getUserRefreshTokens(userId: string) {
+    return this.prisma.refreshToken.findMany({
+      where: { userId, AND: { isRevoked: false } },
+    });
   }
 }

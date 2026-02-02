@@ -13,7 +13,8 @@ export const useAuthStore = defineStore('auth', () => {
     const response = await authApi.login(loginCredentials)
 
     accessToken.value = response.accessToken
-
+    user.value = response.user
+    localStorage.setItem('accessToken', response.accessToken)
     return;
   }
 
@@ -25,6 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
     await authApi.logout(accessToken.value as string)
     accessToken.value = null
     user.value = null
+    localStorage.removeItem('accessToken')
   }
 
   return { isAuthenticated, register, user, login, logout }

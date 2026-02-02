@@ -29,7 +29,7 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken } =
+    const { accessToken, refreshToken, user } =
       await this.authService.login(loginDto);
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -37,9 +37,10 @@ export class AuthController {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-    return { accessToken };
+    return { accessToken, user };
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refresh(
     @Req() req: Request,

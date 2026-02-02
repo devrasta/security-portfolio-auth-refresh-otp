@@ -1,7 +1,4 @@
 <template>
-  <!-- Include this script tag or install `@tailwindplus/elements` via npm: -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindplus/elements@1" type="module"></script> -->
-
   <el-dialog>
     <dialog id="sidebar" class="backdrop:bg-transparent lg:hidden">
       <el-dialog-backdrop
