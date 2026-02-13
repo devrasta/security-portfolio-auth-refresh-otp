@@ -18,7 +18,6 @@ export class ValidationService {
   }
 
   getPasswordStrength(password: string): number {
-    // Returns 0-4 (Weak to Strong)
     let strength = 0;
 
     if (!password || password.length === 0) {

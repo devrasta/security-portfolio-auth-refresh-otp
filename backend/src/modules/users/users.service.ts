@@ -7,8 +7,15 @@ import { UserModel as User } from '@/modules/prisma/generated/models';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async findByEmail(email: string): Promise<User> {
+  async findByEmail(email: string): Promise<Partial<User>> {
     return this.prisma.user.findUnique({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true,
+        createdAt: true,
+      },
       where: {
         email: email,
       },
@@ -41,6 +48,16 @@ export class UsersService {
   async getUserRefreshTokens(userId: string) {
     return this.prisma.refreshToken.findMany({
       where: { userId, AND: { isRevoked: false } },
+    });
+  }
+  async updatePassword(userId: string, hashedPassword: string): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashedPassword,
+      },
     });
   }
 }

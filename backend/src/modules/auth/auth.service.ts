@@ -13,6 +13,20 @@ import { LoginDto } from './dto/login.dto';
 import * as crypto from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
+interface IRefreshTokenPayload {
+  userId: string;
+  tokenFamily: string;
+  deviceInfo?: {
+    deviceId?: string;
+    userAgent?: string | string[];
+    ipAddress?: string;
+  };
+}
+interface IDeviceInfo {
+  deviceId: string;
+  userAgent: string | string[];
+  ipAddress: string;
+}
 @Injectable()
 export class AuthService {
   constructor(
@@ -43,7 +57,7 @@ export class AuthService {
     });
   }
 
-  async login(loginParams: LoginDto) {
+  async login(loginParams: LoginDto, deviceInfo?: IDeviceInfo) {
     const tokenFamily = crypto.randomUUID();
     const user = await this.usersService.findByEmail(loginParams.email);
     const isValid = await this.hashService.verifyPassword(
@@ -60,17 +74,25 @@ export class AuthService {
         userId: user.id,
         email: user.email,
       }),
-      this.jwtService.generateRefreshToken(user.id, tokenFamily),
+      this.generateRefreshToken({
+        userId: user.id,
+        tokenFamily,
+        deviceInfo: deviceInfo || ({} as IDeviceInfo),
+      }),
     ]);
 
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { id: user.id, name: user.name },
     };
   }
 
-  async generateRefreshToken(userId: string, tokenFamily: string) {
+  async generateRefreshToken({
+    userId,
+    tokenFamily,
+    deviceInfo,
+  }: IRefreshTokenPayload) {
     const jti = crypto.randomBytes(16).toString('hex');
 
     const refreshToken = await this.jwtService.generateRefreshToken(
@@ -86,6 +108,11 @@ export class AuthService {
         tokenFamily,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         isRevoked: false,
+        deviceId: deviceInfo.deviceId,
+        userAgent: Array.isArray(deviceInfo.userAgent)
+          ? deviceInfo.userAgent.join(', ')
+          : deviceInfo.userAgent,
+        ipAddress: deviceInfo.ipAddress,
       },
     });
 
@@ -135,6 +162,31 @@ export class AuthService {
 
     await this.prisma.refreshToken.update({
       where: { jti },
+      data: { isRevoked: true },
+    });
+  }
+
+  async changePassword(changePasswordParams: {
+    userId: string;
+    currentPassword: string;
+    newPassword: string;
+  }) {
+    const { userId, currentPassword, newPassword } = changePasswordParams;
+    const user = await this.usersService.findById(userId);
+    const isValid = await this.hashService.verifyPassword(
+      user.password,
+      currentPassword,
+    );
+
+    if (!isValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedNewPassword = await this.hashService.hashPassword(newPassword);
+
+    await this.usersService.updatePassword(userId, hashedNewPassword);
+    await this.prisma.refreshToken.updateMany({
+      where: { userId, isRevoked: false },
       data: { isRevoked: true },
     });
   }

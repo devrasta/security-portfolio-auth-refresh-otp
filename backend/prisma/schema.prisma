@@ -14,9 +14,11 @@ model User {
   password               String
   name                   String?
   emailVerificationToken String?
+  twoFactorEnabled       Boolean  @default(false)
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
   refreshTokens RefreshToken[]
+  activityLogs  ActivityLog[]
 
   @@map("users")
 }
@@ -50,4 +52,24 @@ enum RevokedReason {
   EXPIRED
   LOGOUT
   THEFT
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    ActivityAction
+  ipAddress String?
+  userAgent String?
+  country   String?
+  city      String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+enum ActivityAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILURE
+  LOGOUT
+  TOKEN_REFRESH
+  PASSWORD_CHANGE
 }

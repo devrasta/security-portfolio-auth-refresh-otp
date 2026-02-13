@@ -5,7 +5,10 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { SecurityModule } from './modules/security/security.module';
+import { SessionsModule } from './modules/sessions/sessions.module';
+import { ActivityModule } from './modules/activity/activity.module';
 import * as Joi from 'joi';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -30,9 +33,12 @@ import * as Joi from 'joi';
           .default('development'),
       }),
     }),
+    LoggerModule.forRoot(),
     AuthModule,
     PrismaModule,
     SecurityModule,
+    SessionsModule,
+    ActivityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
