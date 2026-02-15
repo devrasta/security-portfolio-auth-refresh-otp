@@ -44,7 +44,9 @@ describe('HashService', () => {
 
     it('should propagate errors from argon2.hash', async () => {
       (argon2.hash as jest.Mock).mockRejectedValueOnce(new Error('hash error'));
-      await expect(service.hashPassword('mypassword')).rejects.toThrow('hash error');
+      await expect(service.hashPassword('mypassword')).rejects.toThrow(
+        'hash error',
+      );
     });
   });
 
@@ -67,8 +69,12 @@ describe('HashService', () => {
     });
 
     it('should propagate errors from argon2.verify', async () => {
-      (argon2.verify as jest.Mock).mockRejectedValueOnce(new Error('verify error'));
-      await expect(service.verifyPassword('$hash', 'pass')).rejects.toThrow('verify error');
+      (argon2.verify as jest.Mock).mockRejectedValueOnce(
+        new Error('verify error'),
+      );
+      await expect(service.verifyPassword('$hash', 'pass')).rejects.toThrow(
+        'verify error',
+      );
     });
   });
 
@@ -199,7 +205,9 @@ describe('HashService', () => {
       const after = Date.now();
 
       const oneHourMs = 60 * 60 * 1000;
-      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(before + oneHourMs - 100);
+      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
+        before + oneHourMs - 100,
+      );
       expect(expiresAt.getTime()).toBeLessThanOrEqual(after + oneHourMs + 100);
     });
   });

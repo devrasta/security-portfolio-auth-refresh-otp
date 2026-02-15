@@ -117,7 +117,10 @@ describe('UsersService', () => {
 
     it('should check for existing user before creating', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      prisma.user.create.mockResolvedValue({ email: createDto.email, name: createDto.name });
+      prisma.user.create.mockResolvedValue({
+        email: createDto.email,
+        name: createDto.name,
+      });
 
       await service.createUser(createDto);
 
@@ -130,8 +133,12 @@ describe('UsersService', () => {
     it('should throw ConflictException when email is taken', async () => {
       prisma.user.findUnique.mockResolvedValue({ id: 'existing' });
 
-      await expect(service.createUser(createDto)).rejects.toThrow(ConflictException);
-      await expect(service.createUser(createDto)).rejects.toThrow('User already exists');
+      await expect(service.createUser(createDto)).rejects.toThrow(
+        ConflictException,
+      );
+      await expect(service.createUser(createDto)).rejects.toThrow(
+        'User already exists',
+      );
     });
 
     it('should not call prisma.user.create if user already exists', async () => {
@@ -143,7 +150,10 @@ describe('UsersService', () => {
 
     it('should create user with correct data and select', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
-      prisma.user.create.mockResolvedValue({ email: createDto.email, name: createDto.name });
+      prisma.user.create.mockResolvedValue({
+        email: createDto.email,
+        name: createDto.name,
+      });
 
       await service.createUser(createDto);
 

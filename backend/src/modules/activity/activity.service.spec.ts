@@ -48,7 +48,9 @@ describe('ActivityService', () => {
 
     it('should fetch geolocation from ipapi.co', async () => {
       const mockFetch = jest.fn().mockResolvedValue({
-        json: jest.fn().mockResolvedValue({ country_name: 'France', city: 'Paris' }),
+        json: jest
+          .fn()
+          .mockResolvedValue({ country_name: 'France', city: 'Paris' }),
       });
       global.fetch = mockFetch;
       prisma.activityLog.create.mockResolvedValue({ id: 'log-1', ...dto });
@@ -63,7 +65,9 @@ describe('ActivityService', () => {
 
     it('should store activity with geolocation data', async () => {
       global.fetch = jest.fn().mockResolvedValue({
-        json: jest.fn().mockResolvedValue({ country_name: 'France', city: 'Paris' }),
+        json: jest
+          .fn()
+          .mockResolvedValue({ country_name: 'France', city: 'Paris' }),
       });
       const createdLog = { id: 'log-1' };
       prisma.activityLog.create.mockResolvedValue(createdLog);
@@ -133,7 +137,10 @@ describe('ActivityService', () => {
       prisma.activityLog.findMany.mockResolvedValue([]);
       prisma.activityLog.count.mockResolvedValue(0);
 
-      await service.getActivityLogs({ userId: 'user-1', action: 'LOGIN_SUCCESS' as any });
+      await service.getActivityLogs({
+        userId: 'user-1',
+        action: 'LOGIN_SUCCESS' as any,
+      });
 
       expect(prisma.activityLog.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -170,7 +177,11 @@ describe('ActivityService', () => {
       prisma.activityLog.findMany.mockResolvedValue([]);
       prisma.activityLog.count.mockResolvedValue(0);
 
-      await service.getActivityLogs({ userId: 'user-1', limit: 10, offset: 20 });
+      await service.getActivityLogs({
+        userId: 'user-1',
+        limit: 10,
+        offset: 20,
+      });
 
       expect(prisma.activityLog.findMany).toHaveBeenCalledWith(
         expect.objectContaining({

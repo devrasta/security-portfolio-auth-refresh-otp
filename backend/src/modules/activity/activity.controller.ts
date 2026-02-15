@@ -1,7 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ActivityService } from './activity.service';
 import { JwtAuthGuard } from '@/modules/security/guards/jwt-auth.guard';
-import { CurrentUser, JwtPayload } from '@/modules/security/decorators/current-user.decorator';
+import {
+  CurrentUser,
+  JwtPayload,
+} from '@/modules/security/decorators/current-user.decorator';
 import { ActivityAction } from '@/modules/prisma/generated/client';
 
 @Controller('activity')

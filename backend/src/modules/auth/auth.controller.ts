@@ -89,12 +89,16 @@ export class AuthController {
     const refreshToken = this.cryptoService.decrypt(encryptedToken);
     const tokens = await this.authService.refresh(refreshToken);
 
-    res.cookie('refreshToken', this.cryptoService.encrypt(tokens.refreshToken), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
-    });
+    res.cookie(
+      'refreshToken',
+      this.cryptoService.encrypt(tokens.refreshToken),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+      },
+    );
     await this.activityService.logActivity({
       action: 'TOKEN_REFRESH',
       userId: tokens.user.id,

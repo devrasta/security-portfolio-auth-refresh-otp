@@ -9,14 +9,15 @@ import { HashService } from './hash.service';
 describe('JwtManagerService', () => {
   let service: JwtManagerService;
   let nestJwtService: any;
-  let configService: any;
   let prisma: any;
   let hashService: any;
 
   const mockNestJwtService = {
     sign: jest.fn().mockReturnValue('signed-access-token'),
     signAsync: jest.fn().mockResolvedValue('signed-refresh-token'),
-    verify: jest.fn().mockReturnValue({ sub: 'user-1', email: 'test@test.com' }),
+    verify: jest
+      .fn()
+      .mockReturnValue({ sub: 'user-1', email: 'test@test.com' }),
     verifyAsync: jest.fn(),
   };
 
@@ -82,7 +83,10 @@ describe('JwtManagerService', () => {
     });
 
     it('should return the signed token', () => {
-      const result = service.generateAccessToken({ userId: 'user-1', email: 'test@test.com' });
+      const result = service.generateAccessToken({
+        userId: 'user-1',
+        email: 'test@test.com',
+      });
       expect(result).toBe('signed-access-token');
     });
   });
@@ -113,7 +117,9 @@ describe('JwtManagerService', () => {
 
       await service.generateRefreshToken('user-1', 'family-1');
 
-      expect(hashService.hashToken).toHaveBeenCalledWith('signed-refresh-token');
+      expect(hashService.hashToken).toHaveBeenCalledWith(
+        'signed-refresh-token',
+      );
       expect(prisma.refreshToken.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           userId: 'user-1',
@@ -159,7 +165,10 @@ describe('JwtManagerService', () => {
     });
 
     it('should return the decoded payload', () => {
-      nestJwtService.verify.mockReturnValue({ sub: 'user-1', email: 'test@test.com' });
+      nestJwtService.verify.mockReturnValue({
+        sub: 'user-1',
+        email: 'test@test.com',
+      });
       const result = service.verifyAccessToken('some-token');
       expect(result).toEqual({ sub: 'user-1', email: 'test@test.com' });
     });
@@ -168,7 +177,9 @@ describe('JwtManagerService', () => {
       nestJwtService.verify.mockImplementation(() => {
         throw new Error('invalid signature');
       });
-      expect(() => service.verifyAccessToken('bad-token')).toThrow('invalid signature');
+      expect(() => service.verifyAccessToken('bad-token')).toThrow(
+        'invalid signature',
+      );
     });
   });
 
@@ -217,7 +228,9 @@ describe('JwtManagerService', () => {
       await expect(service.verifyRefreshToken('refresh-token')).rejects.toThrow(
         UnauthorizedException,
       );
-      await expect(service.verifyRefreshToken('refresh-token')).rejects.toThrow('Token not found');
+      await expect(service.verifyRefreshToken('refresh-token')).rejects.toThrow(
+        'Token not found',
+      );
     });
 
     it('should throw UnauthorizedException and revoke family on token theft', async () => {
@@ -242,7 +255,9 @@ describe('JwtManagerService', () => {
     it('should propagate JWT verification errors', async () => {
       nestJwtService.verifyAsync.mockRejectedValue(new Error('jwt expired'));
 
-      await expect(service.verifyRefreshToken('expired-token')).rejects.toThrow('jwt expired');
+      await expect(service.verifyRefreshToken('expired-token')).rejects.toThrow(
+        'jwt expired',
+      );
     });
   });
 

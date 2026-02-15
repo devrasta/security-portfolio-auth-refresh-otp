@@ -69,7 +69,9 @@ describe('TokenService', () => {
     });
 
     it('should return unique values on successive calls', () => {
-      const codes = new Set(Array.from({ length: 10 }, () => service.generateShortCode()));
+      const codes = new Set(
+        Array.from({ length: 10 }, () => service.generateShortCode()),
+      );
       expect(codes.size).toBeGreaterThan(1);
     });
   });
