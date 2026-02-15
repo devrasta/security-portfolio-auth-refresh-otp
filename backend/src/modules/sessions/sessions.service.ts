@@ -1,51 +1,64 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-// import { UAParser } from 'ua-parser-js';
-// import { CreateSessionDto } from './dto/create-session.dto';
 
 @Injectable()
 export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
-  //   async createSession(createSession: CreateSessionDto) {
-  //     const parser = new UAParser(createSession.userAgent);
-  //     const deviceInfo = parser.getResult();
-
-  //     return this.prisma.refreshToken.create({
-  //       data: {
-  //         userId: createSession.userId,
-  //         ipAddress: createSession.ipAddress,
-  //         userAgent: createSession.userAgent,
-  //         deviceInfo: deviceInfo,
-  //       },
-  //     });
-  //   }
   async getActiveSessions(userId: string) {
-    return this.prisma.refreshToken.findMany({
+    const sessions = await this.prisma.refreshToken.findMany({
       where: {
         userId,
         isRevoked: false,
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        expiresAt: true,
+        lastUsedAt: true,
+        ipAddress: true,
+        userAgent: true,
+        deviceId: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    return { data: sessions, total: sessions.length };
   }
 
-  private async getLocationFromIP(ipAddress: string) {
-    try {
-      const response = await fetch(`https://ipapi.co/${ipAddress}/json/`, {
-        signal: AbortSignal.timeout(3000),
-      });
-      const data = await response.json();
+  async revokeSession(sessionId: string, userId: string) {
+    const token = await this.prisma.refreshToken.findUnique({
+      where: { id: sessionId },
+    });
 
-      return {
-        country: data.country_name,
-        city: data.city,
-      };
-    } catch (error) {
-      console.error('Failed to fetch location data:', error);
-      return { country: null, city: null };
+    if (!token) {
+      throw new NotFoundException('Session not found');
     }
+
+    if (token.userId !== userId) {
+      throw new ForbiddenException();
+    }
+
+    if (token.isRevoked) {
+      throw new NotFoundException('Session already revoked');
+    }
+
+    await this.prisma.refreshToken.update({
+      where: { id: sessionId },
+      data: {
+        isRevoked: true,
+        revokedAt: new Date(),
+        revokedReason: 'LOGOUT',
+      },
+    });
+
+    return { message: 'Session revoked' };
   }
 }

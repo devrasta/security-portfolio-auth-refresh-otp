@@ -68,12 +68,18 @@ const router = createRouter({
   ],
 })
 
+let initialized = false
+
 router.beforeEach(async (to) => {
-  const { isAuthenticated } = useAuthStore()
+  const authStore = useAuthStore()
+
+  if (!initialized) {
+    initialized = true
+    await authStore.init()
+  }
+
   const publicPages = ['/login', '/register', '/', '/about']
-  console.log('Auth status:', isAuthenticated)
-  console.log('Navigating to:', to.path)
-  if (!isAuthenticated && !publicPages.includes(to.path)) {
+  if (!authStore.isAuthenticated && !publicPages.includes(to.path)) {
     return { name: 'login' }
   }
 })

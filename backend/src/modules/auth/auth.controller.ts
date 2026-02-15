@@ -16,12 +16,14 @@ import { Request, Response } from 'express';
 import { ActivityService } from '../activity/activity.service';
 import { JwtAuthGuard } from '../security/guards/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { CryptoService } from '../security/crypto.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private activityService: ActivityService,
+    private cryptoService: CryptoService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -54,7 +56,7 @@ export class AuthController {
         userAgent: req.headers['user-agent'],
       });
 
-      res.cookie('refreshToken', refreshToken, {
+      res.cookie('refreshToken', this.cryptoService.encrypt(refreshToken), {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
@@ -73,21 +75,21 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @Post('refresh')
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = req.cookies['refreshToken'];
+    const encryptedToken = req.cookies['refreshToken'];
 
-    if (!refreshToken) {
+    if (!encryptedToken) {
       throw new UnauthorizedException('Refresh token not found');
     }
 
+    const refreshToken = this.cryptoService.decrypt(encryptedToken);
     const tokens = await this.authService.refresh(refreshToken);
 
-    res.cookie('refreshToken', tokens.refreshToken, {
+    res.cookie('refreshToken', this.cryptoService.encrypt(tokens.refreshToken), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -102,7 +104,7 @@ export class AuthController {
 
     return {
       accessToken: tokens.accessToken,
-      expiresIn: 900,
+      user: tokens.user,
     };
   }
 
@@ -134,9 +136,10 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('logout')
   async logOut(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken = req.cookies['refreshToken'];
+    const encryptedToken = req.cookies['refreshToken'];
 
-    if (refreshToken) {
+    if (encryptedToken) {
+      const refreshToken = this.cryptoService.decrypt(encryptedToken);
       await this.authService.logout(refreshToken);
     }
 

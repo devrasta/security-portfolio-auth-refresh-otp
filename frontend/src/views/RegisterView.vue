@@ -28,6 +28,8 @@ const isSubmitting = ref(false)
 const handleSubmit = async (event: Event) => {
   event.preventDefault()
   errors.value = {}
+  resultResponse.value = null
+  resultStatus.value = 'success'
 
   const result = v.safeParse(registerSchema, form.value)
 
@@ -43,14 +45,15 @@ const handleSubmit = async (event: Event) => {
 
   isSubmitting.value = true
   try {
-    register(result.output)
+    await register(result.output)
+    resultStatus.value = 'success'
     resultResponse.value = 'Inscription réussie !';
     setTimeout(() => {
       router.push('/login');
     }, 2000);
   } catch (error) {
     resultStatus.value = 'error'
-    resultResponse.value = error as string;
+    resultResponse.value = error instanceof Error ? error.message : 'Une erreur est survenue';
   } finally {
     isSubmitting.value = false
   }

@@ -56,13 +56,13 @@ enum RevokedReason {
 
 model ActivityLog {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String?
   action    ActivityAction
   ipAddress String?
   userAgent String?
   country   String?
   city      String?
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 

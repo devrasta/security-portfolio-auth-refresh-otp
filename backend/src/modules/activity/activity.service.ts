@@ -7,7 +7,7 @@ export class ActivityService {
   constructor(private prisma: PrismaService) {}
 
   async logActivity(dto: {
-    userId: string;
+    userId: string | null;
     action: ActivityAction;
     ipAddress: string;
     userAgent: string;

@@ -27,7 +27,7 @@ export const CurrentUser = createParamDecorator(
   (data: string | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     const user = request.user;
-
+    console.log('CurrentUser Decorator - Extracted User:', user);
     // If a specific field is requested, return only that field
     // Example: @CurrentUser('userId') userId: string
     return data ? user?.[data] : user;

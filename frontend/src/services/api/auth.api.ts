@@ -19,14 +19,53 @@ export interface User {
   email: string
   name: string
 }
-console.log(import.meta.env.VITE_API_URL)
+
+export interface Session {
+  id: string
+  createdAt: string
+  expiresAt: string
+  lastUsedAt: string | null
+  ipAddress: string | null
+  userAgent: string | null
+  deviceId: string | null
+}
+
+export interface ActivityLog {
+  id: string
+  action: string
+  ipAddress: string | null
+  userAgent: string | null
+  country: string | null
+  city: string | null
+  createdAt: string
+}
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+const errorMessages: Record<string, string> = {
+  'Invalid credentials': 'Identifiants invalides',
+  'Invalid email': 'Adresse email invalide',
+  'Weak password': 'Mot de passe trop faible',
+  'User already exists': 'Un compte avec cet email existe déjà',
+  'Current password is incorrect': 'Le mot de passe actuel est incorrect',
+  'Refresh token not found': 'Session expirée, veuillez vous reconnecter',
+  'Access token is required': 'Authentification requise',
+  'Access token has expired': 'Session expirée, veuillez vous reconnecter',
+  'Invalid access token': 'Session invalide, veuillez vous reconnecter',
+  'User not found': 'Utilisateur introuvable',
+  'Authentication failed': 'Échec de l\'authentification',
+  'Token theft detected': 'Activité suspecte détectée, veuillez vous reconnecter',
+}
+
+function translateError(message: string): string {
+  return errorMessages[message] || message
+}
+
 class ApiError extends Error {
   constructor(
     public status: number,
-    public message: string,
+    message: string,
   ) {
-    super(message)
+    super(translateError(message))
     this.name = 'ApiError'
   }
 }
@@ -40,7 +79,7 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
       'Content-Type': 'application/json',
       ...options.headers,
     },
-    credentials: 'include', //  Envoie les cookies httpOnly
+    credentials: 'include',
   }
 
   try {
@@ -107,6 +146,61 @@ export const authApi = {
    */
   async getProfile(accessToken: string): Promise<User> {
     return fetchApi<User>('/auth/profile', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+}
+
+// ════════════════════════════════════════════════════════
+// SESSIONS API
+// ════════════════════════════════════════════════════════
+
+export const sessionsApi = {
+  async getActiveSessions(accessToken: string): Promise<{ data: Session[]; total: number }> {
+    return fetchApi<{ data: Session[]; total: number }>('/sessions', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+
+  async revokeSession(accessToken: string, sessionId: string): Promise<{ message: string }> {
+    return fetchApi<{ message: string }>(`/sessions/${sessionId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+}
+
+// ════════════════════════════════════════════════════════
+// ACTIVITY API
+// ════════════════════════════════════════════════════════
+
+export const activityApi = {
+  async getRecentActivity(accessToken: string, limit = 5): Promise<ActivityLog[]> {
+    return fetchApi<ActivityLog[]>(`/activity/recent?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+
+  async getActivityLogs(
+    accessToken: string,
+    params: { limit?: number; offset?: number; action?: string } = {},
+  ): Promise<{ data: ActivityLog[]; total: number }> {
+    const query = new URLSearchParams()
+    if (params.limit) query.set('limit', String(params.limit))
+    if (params.offset) query.set('offset', String(params.offset))
+    if (params.action) query.set('action', params.action)
+    return fetchApi<{ data: ActivityLog[]; total: number }>(`/activity?${query}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,

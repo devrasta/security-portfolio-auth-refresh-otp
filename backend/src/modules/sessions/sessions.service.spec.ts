@@ -69,7 +69,9 @@ describe('SessionsService', () => {
   describe('getLocationFromIP (private)', () => {
     it('should fetch from ipapi.co with correct IP', async () => {
       const mockFetch = jest.fn().mockResolvedValue({
-        json: jest.fn().mockResolvedValue({ country_name: 'France', city: 'Paris' }),
+        json: jest
+          .fn()
+          .mockResolvedValue({ country_name: 'France', city: 'Paris' }),
       });
       global.fetch = mockFetch;
 

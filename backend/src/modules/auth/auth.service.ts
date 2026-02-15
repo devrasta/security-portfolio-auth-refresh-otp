@@ -60,6 +60,11 @@ export class AuthService {
   async login(loginParams: LoginDto, deviceInfo?: IDeviceInfo) {
     const tokenFamily = crypto.randomUUID();
     const user = await this.usersService.findByEmail(loginParams.email);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const isValid = await this.hashService.verifyPassword(
       user.password,
       loginParams.password,

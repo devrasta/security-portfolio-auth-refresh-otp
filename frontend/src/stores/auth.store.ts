@@ -4,10 +4,28 @@ import { authApi } from '@/services/api/auth.api'
 import { type RegisterCredentials, type LoginCredentials } from '@/services/api/auth.api'
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessToken = ref<string | null>(null)
-  const user = ref<{ id: string; email: string } | null>(null)
+  const accessToken = ref<string | null>(localStorage.getItem('accessToken'))
+  const user = ref<{ id: string; email: string; name?: string } | null>(null)
 
   const isAuthenticated = computed(() => !!user.value && !!accessToken.value)
+
+  async function init() {
+    // Au reload, on tente un refresh via le cookie httpOnly
+    // pour obtenir un access token frais + les infos user
+    try {
+      await refreshToken()
+    } catch {
+      accessToken.value = null
+      localStorage.removeItem('accessToken')
+    }
+  }
+
+  async function refreshToken() {
+    const response = await authApi.refresh()
+    accessToken.value = response.accessToken
+    user.value = response.user
+    localStorage.setItem('accessToken', response.accessToken)
+  }
 
   async function login(loginCredentials: LoginCredentials) {
     const response = await authApi.login(loginCredentials)
@@ -29,5 +47,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('accessToken')
   }
 
-  return { isAuthenticated, register, user, login, logout }
+  return { isAuthenticated, accessToken, register, user, login, logout, init }
 })

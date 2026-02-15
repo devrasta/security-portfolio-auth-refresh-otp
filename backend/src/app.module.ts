@@ -33,7 +33,14 @@ import { LoggerModule } from 'nestjs-pino';
           .default('development'),
       }),
     }),
-    LoggerModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? { target: 'pino-pretty', options: { colorize: true } }
+            : undefined,
+      },
+    }),
     AuthModule,
     PrismaModule,
     SecurityModule,

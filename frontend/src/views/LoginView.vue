@@ -32,6 +32,7 @@ const resultResponse = ref<string | null>(null)
 const handleSubmit = async (event: Event) => {
   event.preventDefault()
   errors.value = {}
+  resultResponse.value = null
 
   const result = v.safeParse(loginSchema, form.value)
 
@@ -49,7 +50,7 @@ const handleSubmit = async (event: Event) => {
     await login(result.output)
     router.push('/dashboard');
   } catch (error) {
-    resultResponse.value = error as string;
+    resultResponse.value = error instanceof Error ? error.message : 'Une erreur est survenue';
   } finally {
     isSubmitting.value = false
   }
@@ -112,6 +113,10 @@ const handleSubmit = async (event: Event) => {
           </button>
         </div>
       </form>
+
+      <p v-if="resultResponse" class="form-error mt-4 text-center">
+        {{ resultResponse }}
+      </p>
 
       <p class="auth-footer">
         Pas encore de compte?

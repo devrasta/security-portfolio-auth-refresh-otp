@@ -1,10 +1,8 @@
-// src/modules/activity/activity.controller.ts
-
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ActivityService } from './activity.service';
 import { JwtAuthGuard } from '@/modules/security/guards/jwt-auth.guard';
-import { CurrentUser } from '@/modules/security/decorators/current-user.decorator';
-import { User, ActivityAction } from '@/modules/prisma/generated/client';
+import { CurrentUser, JwtPayload } from '@/modules/security/decorators/current-user.decorator';
+import { ActivityAction } from '@/modules/prisma/generated/client';
 
 @Controller('activity')
 @UseGuards(JwtAuthGuard)
@@ -13,13 +11,13 @@ export class ActivityController {
 
   @Get()
   async getActivityLogs(
-    @CurrentUser() user: User,
+    @CurrentUser() user: JwtPayload,
     @Query('action') action?: ActivityAction,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ) {
     return this.activityService.getActivityLogs({
-      userId: user.id,
+      userId: user.userId,
       action,
       limit: limit ? parseInt(limit) : undefined,
       offset: offset ? parseInt(offset) : undefined,
@@ -28,11 +26,11 @@ export class ActivityController {
 
   @Get('recent')
   async getRecentActivity(
-    @CurrentUser() user: User,
+    @CurrentUser() user: JwtPayload,
     @Query('limit') limit?: string,
   ) {
     return this.activityService.getRecentActivity(
-      user.id,
+      user.userId,
       limit ? parseInt(limit) : 10,
     );
   }
