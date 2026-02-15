@@ -1,0 +1,37 @@
+meta {
+  name: get-recent-activity
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{api_url}}/activity/recent?limit=10
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  limit: 10
+}
+
+docs {
+  # Get Recent Activity
+
+  Recupere les dernieres activites de l'utilisateur connecte.
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Query params** :
+  - `limit` (optionnel) : nombre de resultats, defaut 10
+
+  **Reponse** : tableau de logs ordonne par date decroissante
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

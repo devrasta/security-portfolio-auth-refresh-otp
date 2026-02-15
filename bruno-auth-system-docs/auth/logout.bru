@@ -1,0 +1,33 @@
+meta {
+  name: logout
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api_url}}/auth/logout
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Logout
+
+  Deconnecte l'utilisateur en revoquant le refresh token et en supprimant le cookie.
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Effets** :
+  - Revoque le refresh token en base
+  - Supprime le cookie `refreshToken`
+  - Log l'activite LOGOUT
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

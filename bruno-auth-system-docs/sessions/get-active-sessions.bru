@@ -1,0 +1,32 @@
+meta {
+  name: get-active-sessions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api_url}}/sessions
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Get Active Sessions
+
+  Recupere la liste des sessions actives (refresh tokens non revoques et non expires) de l'utilisateur connecte.
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Reponse** :
+  - `data` : tableau de sessions (id, createdAt, expiresAt, lastUsedAt, ipAddress, userAgent, deviceId)
+  - `total` : nombre de sessions actives
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

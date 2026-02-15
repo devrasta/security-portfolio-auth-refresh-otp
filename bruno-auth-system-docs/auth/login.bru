@@ -1,0 +1,29 @@
+meta {
+  name: login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api_url}}/auth/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "tojtkoooj@toto.fr",
+    "password": "GjgVypyxi-khlh25!!"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("access_token", res.body.accessToken);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
