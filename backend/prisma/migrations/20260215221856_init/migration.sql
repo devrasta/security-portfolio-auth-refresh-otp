@@ -11,6 +11,7 @@ CREATE TABLE "users" (
     "password" TEXT NOT NULL,
     "name" TEXT,
     "emailVerificationToken" TEXT,
+    "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -40,7 +41,7 @@ CREATE TABLE "RefreshToken" (
 -- CreateTable
 CREATE TABLE "ActivityLog" (
     "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" TEXT,
     "action" "ActivityAction" NOT NULL,
     "ipAddress" TEXT,
     "userAgent" TEXT,
