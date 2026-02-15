@@ -1,0 +1,42 @@
+meta {
+  name: revoke-session
+  type: http
+  seq: 2
+}
+
+delete {
+  url: {{api_url}}/sessions/:id
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:path {
+  id: {{session_id}}
+}
+
+docs {
+  # Revoke Session
+
+  Revoque une session specifique (refresh token) de l'utilisateur connecte. Utile pour deconnecter un appareil a distance depuis le dashboard.
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Path params** :
+  - `id` : identifiant de la session (refresh token id)
+
+  **Reponse** :
+  - `message` : "Session revoked"
+
+  **Erreurs** :
+  - 404 : Session non trouvee ou deja revoquee
+  - 403 : Session appartenant a un autre utilisateur
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
