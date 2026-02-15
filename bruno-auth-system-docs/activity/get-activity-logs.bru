@@ -1,0 +1,43 @@
+meta {
+  name: get-activity-logs
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api_url}}/activity?limit=50&offset=0
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+params:query {
+  limit: 50
+  offset: 0
+  ~action: LOGIN_SUCCESS
+}
+
+docs {
+  # Get Activity Logs
+
+  Recupere les logs d'activite de l'utilisateur connecte avec pagination.
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Query params** :
+  - `limit` (optionnel) : nombre de resultats, defaut 50
+  - `offset` (optionnel) : decalage, defaut 0
+  - `action` (optionnel) : filtre par type - LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT, TOKEN_REFRESH, PASSWORD_CHANGE
+
+  **Reponse** :
+  - `data` : tableau de logs (id, action, ipAddress, userAgent, country, city, createdAt)
+  - `total` : nombre total de logs
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

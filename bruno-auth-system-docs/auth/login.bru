@@ -1,7 +1,7 @@
 meta {
   name: login
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
@@ -14,6 +14,12 @@ body:json {
   {
     "email": "tojtkoooj@toto.fr",
     "password": "GjgVypyxi-khlh25!!"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("access_token", res.body.accessToken);
   }
 }
 

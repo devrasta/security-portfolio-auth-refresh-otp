@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "auth-refresh-2fa",
+  "name": "bruno-auth-system-docs",
   "type": "collection",
   "ignore": [
     "node_modules",

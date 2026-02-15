@@ -58,16 +58,8 @@ services:
         condition: service_started
     networks:
       - auth-internal
-      - traefik-public
     ports:
       - "3000:3000"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.auth-api.rule=Host(`auth.overstand.cloud`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.auth-api.entrypoints=websecure"
-      - "traefik.http.routers.auth-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.auth-api.loadbalancer.server.port=3000"
 
   # Frontend Vue 3
   auth-frontend:
@@ -81,21 +73,12 @@ services:
     env_file:
       - ./frontend/.env
     networks:
-      - traefik-public
+      - auth-internal
     ports:
-      - "5174:8080" # Exposé pour dev local
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.auth-frontend.rule=Host(`auth.overstand.cloud`)"
-      - "traefik.http.routers.auth-frontend.entrypoints=websecure"
-      - "traefik.http.routers.auth-frontend.tls.certresolver=letsencrypt"
-      - "traefik.http.services.auth-frontend.loadbalancer.server.port=8080"
+      - "5174:8080"
 
 networks:
   auth-internal:
-    driver: bridge
-  traefik-public:
     driver: bridge
 
 volumes:
