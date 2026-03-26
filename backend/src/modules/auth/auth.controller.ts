@@ -15,8 +15,10 @@ import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
 import { ActivityService } from '../activity/activity.service';
 import { JwtAuthGuard } from '../security/guards/jwt-auth.guard';
+import { MailThrottlerGuard } from './mail-throttler.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { CryptoService } from '../security/crypto.service';
+import { Throttle, hours, days } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -27,12 +29,15 @@ export class AuthController {
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { ttl: hours(1), limit: 5 } })
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
   @HttpCode(HttpStatus.OK)
+  @Throttle({ loginByEmail: {} })
+  @UseGuards(MailThrottlerGuard)
   @Post('login')
   async logIn(
     @Body() loginDto: LoginDto,
@@ -60,7 +65,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: days(7),
       });
       return { accessToken, user };
     } catch (error) {
@@ -96,7 +101,7 @@ export class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+        maxAge: days(7),
       },
     );
     await this.activityService.logActivity({
