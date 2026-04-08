@@ -70,6 +70,12 @@ class ApiError extends Error {
   }
 }
 
+let onUnauthorized: (() => void) | null = null
+
+export function setUnauthorizedHandler(handler: () => void) {
+  onUnauthorized = handler
+}
+
 async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
 
@@ -85,6 +91,9 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
   try {
     const response = await fetch(url, config)
     if (!response.ok) {
+      if (response.status === 401 && endpoint !== '/auth/refresh') {
+        onUnauthorized?.()
+      }
       const errorData = await response.json().catch(() => ({}))
       throw new ApiError(response.status, errorData.message || 'Une erreur est survenue')
     }
@@ -113,6 +122,13 @@ export const authApi = {
     return fetchApi<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(credentials),
+    })
+  },
+
+  async checkPasswordStrength(password: string): Promise<{ strength: number }> {
+    return fetchApi<{ strength: number }>('/auth/password-strength', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
     })
   },
 

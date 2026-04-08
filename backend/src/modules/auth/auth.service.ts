@@ -42,8 +42,17 @@ export class AuthService {
     if (!this.validationService.isValidEmail(dto.email)) {
       throw new BadRequestException('Invalid email');
     }
-    if (!this.validationService.isStrongPassword(dto.password)) {
-      throw new BadRequestException('Weak password');
+    const isStrong = await this.validationService.isStrongPassword(
+      dto.password,
+    );
+    if (!isStrong) {
+      const passStrength = this.validationService.getPasswordStrength(
+        dto.password,
+      );
+      throw new BadRequestException({
+        message: 'Weak password',
+        strength: passStrength,
+      });
     }
 
     const hashedPassword = await this.hashService.hashPassword(dto.password);
@@ -113,11 +122,11 @@ export class AuthService {
         tokenFamily,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         isRevoked: false,
-        deviceId: deviceInfo.deviceId,
-        userAgent: Array.isArray(deviceInfo.userAgent)
+        deviceId: deviceInfo?.deviceId,
+        userAgent: Array.isArray(deviceInfo?.userAgent)
           ? deviceInfo.userAgent.join(', ')
-          : deviceInfo.userAgent,
-        ipAddress: deviceInfo.ipAddress,
+          : deviceInfo?.userAgent,
+        ipAddress: deviceInfo?.ipAddress,
       },
     });
 
@@ -152,7 +161,7 @@ export class AuthService {
         userId: user.id,
         email: user.email,
       }),
-      this.jwtService.generateRefreshToken(user.id, tokenFamily),
+      this.generateRefreshToken({ userId: user.id, tokenFamily }),
     ]);
 
     return {

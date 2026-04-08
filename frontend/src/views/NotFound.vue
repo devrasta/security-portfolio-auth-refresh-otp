@@ -1,12 +1,4 @@
 <template>
-  <!--
-  This example requires updating your template:
-
-  ```
-  <html class="h-full">
-  <body class="h-full">
-  ```
--->
   <main class="relative isolate min-h-screen py-40">
     <img
       src="/rich_forest.jpg"
@@ -18,15 +10,10 @@
     >
       <p class="text-8xl font-semibold text-white">404</p>
       <h1 class="mt-4 text-5xl font-semibold tracking-tight text-balance text-white sm:text-7xl">
-        Page not found
+        Page introuvable
       </h1>
-      <p
-        class="mt-6 text-lg font-medium text-pretty sm:text-xl/8 text-shadow-xs text-shadow-emerald-800"
-      >
-        You lost in Zion Take a breath before redirect to homepage
-      </p>
-      <div class="mt-10 flex justify-center">
-        <RouterLink to="/"> Back to home </RouterLink>
+      <div class="mt-10 flex justify-center text-gray-300 underline">
+        <RouterLink to="/"> Retour à l'accueil </RouterLink>
       </div>
     </div>
   </main>

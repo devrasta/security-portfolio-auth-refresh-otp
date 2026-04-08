@@ -18,7 +18,8 @@ import { JwtAuthGuard } from '../security/guards/jwt-auth.guard';
 import { MailThrottlerGuard } from './mail-throttler.guard';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { CryptoService } from '../security/crypto.service';
-import { Throttle, hours, days } from '@nestjs/throttler';
+import { ValidationService } from '../security/validation.service';
+import { Throttle, hours, days, minutes } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -26,6 +27,7 @@ export class AuthController {
     private authService: AuthService,
     private activityService: ActivityService,
     private cryptoService: CryptoService,
+    private validationService: ValidationService,
   ) {}
 
   @HttpCode(HttpStatus.CREATED)
@@ -33,6 +35,16 @@ export class AuthController {
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Throttle({
+    default: { ttl: minutes(1), limit: 120 },
+    loginByEmail: { ttl: minutes(1), limit: 120 },
+  })
+  @Post('password-strength')
+  checkPasswordStrength(@Body('password') password: string) {
+    return { strength: this.validationService.getPasswordStrength(password) };
   }
 
   @HttpCode(HttpStatus.OK)

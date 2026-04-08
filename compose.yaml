@@ -59,20 +59,20 @@ services:
       - "3000:3000"
 
   # Frontend Vue 3
-  auth-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL}
-    container_name: auth-frontend
-    restart: unless-stopped
-    env_file:
-      - ./frontend/.env
-    networks:
-      - auth-internal
-    ports:
-      - "5174:8080"
+  # auth-frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #     args:
+  #       VITE_API_URL: ${VITE_API_URL}
+  #   container_name: auth-frontend
+  #   restart: unless-stopped
+  #   env_file:
+  #     - ./frontend/.env
+  #   networks:
+  #     - auth-internal
+  #   ports:
+  #     - "5174:8080"
 
 networks:
   auth-internal:
