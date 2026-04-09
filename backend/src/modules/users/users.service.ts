@@ -14,6 +14,7 @@ export class UsersService {
         email: true,
         name: true,
         password: true,
+        twoFactorEnabled: true,
         createdAt: true,
       },
       where: {
@@ -59,5 +60,17 @@ export class UsersService {
         password: hashedPassword,
       },
     });
+  }
+
+  async toggleTwoFactor(
+    userId: string,
+    enabled: boolean,
+  ): Promise<{ twoFactorEnabled: boolean }> {
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: enabled },
+      select: { twoFactorEnabled: true },
+    });
+    return updated;
   }
 }

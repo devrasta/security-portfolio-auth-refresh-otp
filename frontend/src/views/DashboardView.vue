@@ -16,54 +16,28 @@
         Quick Stats
       </h2>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <!-- Account -->
-        <div class="bg-white shadow rounded-lg p-5">
-          <div class="flex items-center">
-            <div class="shrink-0 rounded-md bg-indigo-50 p-3">
-              <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Account</p>
-              <p class="text-lg font-semibold text-gray-900">Active</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Security -->
-        <div class="bg-white shadow rounded-lg p-5">
-          <div class="flex items-center">
-            <div class="shrink-0 rounded-md bg-green-50 p-3">
-              <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Security</p>
-              <p class="text-lg font-semibold text-gray-900">
-                {{ sessions.length }} session{{ sessions.length > 1 ? 's' : '' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Activity -->
-        <div class="bg-white shadow rounded-lg p-5">
-          <div class="flex items-center">
-            <div class="shrink-0 rounded-md bg-amber-50 p-3">
-              <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500">Activity</p>
-              <p class="text-lg font-semibold text-gray-900">
-                {{ loginCount }} login{{ loginCount > 1 ? 's' : '' }}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          label="Authentification à deux facteurs"
+          :value="authStore.user?.twoFactorEnabled ? 'Activé' : 'Désactivé'"
+          color="indigo"
+          :icon="User"
+        >
+          <template #action>
+            <input type="checkbox" :checked="authStore.user?.twoFactorEnabled" class="toggle toggle-indigo" />
+          </template>
+        </StatCard>
+        <StatCard
+          label="Sessions actives"
+          :value="`${sessions.length} session${sessions.length > 1 ? 's' : ''}`"
+          color="green"
+          :icon="ShieldCheck"
+        />
+        <StatCard
+          label="Nombre de connexions"
+          :value="`${loginCount} login${loginCount > 1 ? 's' : ''}`"
+          color="amber"
+          :icon="Zap"
+        />
       </div>
     </div>
 
@@ -146,32 +120,6 @@
       </ul>
     </div>
 
-    <!-- Quick Actions -->
-    <div>
-      <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4">
-        Quick Actions
-      </h2>
-      <div class="flex flex-wrap gap-3">
-        <RouterLink
-          to="/profile"
-          class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow ring-1 ring-gray-300 hover:bg-gray-50"
-        >
-          Update Profile
-        </RouterLink>
-        <RouterLink
-          to="/security"
-          class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow ring-1 ring-gray-300 hover:bg-gray-50"
-        >
-          Change Password
-        </RouterLink>
-        <RouterLink
-          to="/activity"
-          class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow ring-1 ring-gray-300 hover:bg-gray-50"
-        >
-          View All Activity
-        </RouterLink>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -179,7 +127,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import StatCard from '@/components/StatCard.vue'
 import { sessionsApi, activityApi, type Session, type ActivityLog } from '@/services/api/auth.api'
+import { User, ShieldCheck, Zap } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
@@ -187,7 +137,8 @@ const sessions = ref<Session[]>([])
 const recentActivity = ref<ActivityLog[]>([])
 const loading = ref(true)
 
-const userName = computed(() => authStore.user?.name || authStore.user?.email || 'User')
+const userName = computed(() => authStore.user?.name || authStore.user?.email)
+
 
 const lastLogin = computed(() =>
   recentActivity.value.find((log) => log.action === 'LOGIN_SUCCESS'),

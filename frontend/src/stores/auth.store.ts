@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { authApi } from '@/services/api/auth.api'
 import { type RegisterCredentials, type LoginCredentials } from '@/services/api/auth.api'
 
-type AuthUser = { id: string; email: string; name?: string }
+type AuthUser = { id: string; email: string; name?: string; twoFactorEnabled: boolean }
 
 function loadUser(): AuthUser | null {
   try {

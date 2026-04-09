@@ -46,6 +46,29 @@ import { APP_GUARD } from '@nestjs/core';
           process.env.NODE_ENV !== 'production'
             ? { target: 'pino-pretty', options: { colorize: true } }
             : undefined,
+        redact: {
+          paths: [
+            'req.headers.authorization',
+            'req.headers.cookie',
+            'res.headers["set-cookie"]',
+          ],
+          censor: '[REDACTED]',
+        },
+        serializers: {
+          req(req) {
+            return {
+              id: req.id,
+              method: req.method,
+              url: req.url,
+              remoteAddress: req.remoteAddress,
+            };
+          },
+          res(res) {
+            return {
+              statusCode: res.statusCode,
+            };
+          },
+        },
       },
     }),
     AuthModule,

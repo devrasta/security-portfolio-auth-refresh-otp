@@ -18,6 +18,7 @@ export interface User {
   id: string
   email: string
   name: string
+  twoFactorEnabled: boolean
 }
 
 export interface Session {

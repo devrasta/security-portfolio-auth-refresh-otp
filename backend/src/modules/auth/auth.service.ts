@@ -134,28 +134,23 @@ export class AuthService {
   }
 
   async verifyRefreshToken(token: string) {
-    // Vérifie le JWT et le token en DB (validité, révocation)
     const { userId, tokenFamily, jti } =
       await this.jwtService.verifyRefreshToken(token);
 
-    // Récupère l'utilisateur associé
     const user = await this.usersService.findById(userId);
 
     return { user, tokenFamily, jti };
   }
 
   async refresh(refreshToken: string) {
-    // Vérifie et récupère les infos du token
     const { user, tokenFamily, jti } =
       await this.verifyRefreshToken(refreshToken);
 
-    // Révoque l'ancien token
     await this.prisma.refreshToken.update({
       where: { jti },
       data: { isRevoked: true },
     });
 
-    // Génère les nouveaux tokens (même famille pour la rotation)
     const [newAccessToken, newRefreshToken] = await Promise.all([
       this.jwtService.generateAccessToken({
         userId: user.id,
@@ -167,7 +162,11 @@ export class AuthService {
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      user: { id: user.id, name: user.name },
+      user: {
+        id: user.id,
+        name: user.name,
+        twoFactorEnabled: user.twoFactorEnabled,
+      },
     };
   }
 
