@@ -32,3 +32,8 @@ export type RefreshToken = Prisma.RefreshTokenModel
  * 
  */
 export type ActivityLog = Prisma.ActivityLogModel
+/**
+ * Model TwoFactorSecret
+ * 
+ */
+export type TwoFactorSecret = Prisma.TwoFactorSecretModel

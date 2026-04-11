@@ -172,6 +172,31 @@ export const authApi = {
 }
 
 // ════════════════════════════════════════════════════════
+// TWO-FACTOR API
+// ════════════════════════════════════════════════════════
+
+export const twoFactorApi = {
+  async setup(accessToken: string): Promise<{ secret: string; qrCode: string }> {
+    return fetchApi<{ secret: string; qrCode: string }>('/auth/2fa/setup', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+
+  async enable(accessToken: string, code: string): Promise<{ message: string }> {
+    return fetchApi<{ message: string }>('/auth/2fa/enable', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ code }),
+    })
+  },
+}
+
+// ════════════════════════════════════════════════════════
 // SESSIONS API
 // ════════════════════════════════════════════════════════
 

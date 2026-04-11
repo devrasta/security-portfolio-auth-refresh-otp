@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.2.0
- * Query Engine version: 0c8ef2ce45c83248ab3df073180d5eda9e8be7a3
+ * Prisma Client JS version: 7.7.0
+ * Query Engine version: 75cbdc1eb7150937890ad5465d861175c6624711
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.2.0",
-  engine: "0c8ef2ce45c83248ab3df073180d5eda9e8be7a3"
+  client: "7.7.0",
+  engine: "75cbdc1eb7150937890ad5465d861175c6624711"
 }
 
 /**
@@ -386,7 +386,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 export const ModelName = {
   User: 'User',
   RefreshToken: 'RefreshToken',
-  ActivityLog: 'ActivityLog'
+  ActivityLog: 'ActivityLog',
+  TwoFactorSecret: 'TwoFactorSecret'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -402,7 +403,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "refreshToken" | "activityLog"
+    modelProps: "user" | "refreshToken" | "activityLog" | "twoFactorSecret"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -628,6 +629,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TwoFactorSecret: {
+      payload: Prisma.$TwoFactorSecretPayload<ExtArgs>
+      fields: Prisma.TwoFactorSecretFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TwoFactorSecretFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TwoFactorSecretFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>
+        }
+        findFirst: {
+          args: Prisma.TwoFactorSecretFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TwoFactorSecretFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>
+        }
+        findMany: {
+          args: Prisma.TwoFactorSecretFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>[]
+        }
+        create: {
+          args: Prisma.TwoFactorSecretCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>
+        }
+        createMany: {
+          args: Prisma.TwoFactorSecretCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TwoFactorSecretCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>[]
+        }
+        delete: {
+          args: Prisma.TwoFactorSecretDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>
+        }
+        update: {
+          args: Prisma.TwoFactorSecretUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>
+        }
+        deleteMany: {
+          args: Prisma.TwoFactorSecretDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TwoFactorSecretUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TwoFactorSecretUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>[]
+        }
+        upsert: {
+          args: Prisma.TwoFactorSecretUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TwoFactorSecretPayload>
+        }
+        aggregate: {
+          args: Prisma.TwoFactorSecretAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTwoFactorSecret>
+        }
+        groupBy: {
+          args: Prisma.TwoFactorSecretGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwoFactorSecretGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TwoFactorSecretCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TwoFactorSecretCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -713,6 +788,19 @@ export const ActivityLogScalarFieldEnum = {
 } as const
 
 export type ActivityLogScalarFieldEnum = (typeof ActivityLogScalarFieldEnum)[keyof typeof ActivityLogScalarFieldEnum]
+
+
+export const TwoFactorSecretScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  secret: 'secret',
+  isEnabled: 'isEnabled',
+  backupCodes: 'backupCodes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TwoFactorSecretScalarFieldEnum = (typeof TwoFactorSecretScalarFieldEnum)[keyof typeof TwoFactorSecretScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -919,6 +1007,7 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   refreshToken?: Prisma.RefreshTokenOmit
   activityLog?: Prisma.ActivityLogOmit
+  twoFactorSecret?: Prisma.TwoFactorSecretOmit
 }
 
 /* Types for Logging */

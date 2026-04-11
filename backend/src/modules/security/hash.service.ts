@@ -50,25 +50,8 @@ export class HashService {
   }
 
   // ════════════════════════════════════════════════════════
-  // ID & TOKEN GENERATION
+  // TOKEN GENERATION
   // ════════════════════════════════════════════════════════
-
-  /**
-   * Génère un identifiant unique aléatoire (jti)
-   * @param bytes - Nombre de bytes (default: 16 = 32 caractères hex)
-   * @returns String hexadécimal unique
-   */
-  generateId(bytes: number = 16): string {
-    return crypto.randomBytes(bytes).toString('hex');
-  }
-
-  /**
-   * Génère un UUID v4 pour tokenFamily
-   * @returns UUID v4 (ex: "550e8400-e29b-41d4-a716-446655440000")
-   */
-  generateTokenFamily(): string {
-    return crypto.randomUUID();
-  }
 
   /**
    * Génère un token aléatoire sécurisé
@@ -78,34 +61,5 @@ export class HashService {
    */
   generateSecureToken(bytes: number = 32): string {
     return crypto.randomBytes(bytes).toString('hex');
-  }
-
-  /**
-   * Génère un code de vérification à 6 chiffres
-   * Utile pour 2FA, email verification, etc.
-   * @returns Code à 6 chiffres (ex: "123456")
-   */
-  generateVerificationCode(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  // ════════════════════════════════════════════════════════
-  // PASSWORD RESET TOKEN
-  // ════════════════════════════════════════════════════════
-
-  /**
-   * Génère un token pour reset password
-   * @returns Token sécurisé + hash pour DB + expiration
-   */
-  generatePasswordResetToken(): {
-    token: string;
-    hashedToken: string;
-    expiresAt: Date;
-  } {
-    const token = this.generateSecureToken(32);
-    const hashedToken = this.hashToken(token);
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
-
-    return { token, hashedToken, expiresAt };
   }
 }

@@ -222,17 +222,7 @@
 
       <div class="flex flex-1 gap-x-4 justify-end lg:gap-x-6">
         <div class="flex items-center gap-x-4 lg:gap-x-6">
-          <div class="dropdown">
-            <div tabindex="0" role="button" class="btn m-1">
-              <Bell aria-hidden="true" class="size-6" />
-            </div>
-            <ul
-              tabindex="-1"
-              class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm"
-            >
-              <li><a>Item 1</a></li>
-            </ul>
-          </div>
+
 
           <!-- Separator -->
           <div
@@ -240,18 +230,12 @@
             class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"
           ></div>
 
-          <!-- Profile dropdown -->
           <RouterLink to="/profile" class="relative flex items-center">
-            <img
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-              alt=""
-              class="size-8 rounded-full bg-gray-50 outline -outline-offset-1 outline-black/5"
-            />
             <span class="hidden lg:flex lg:items-center">
               <span
                 aria-hidden="true"
                 class="ml-4 text-sm/6 font-semibold text-gray-900"
-                >Tom Cook</span
+                >{{ user?.name }}</span
               >
             </span>
           </RouterLink>
@@ -261,7 +245,6 @@
 
     <main class="py-10">
       <div class="px-4 sm:px-6 lg:px-8">
-        <!-- Le contenu de la page sera injecté ici via RouterView -->
         <RouterView />
       </div>
     </main>
@@ -274,7 +257,7 @@ import { X, House, Users, ShieldCheck, Bell, ClipboardList, LogOut, Menu } from 
 
 import { useAuthStore } from '@/stores/auth.store'
 
-const { logout } = useAuthStore()
+const { logout, user } = useAuthStore()
 const router = useRouter()
 
 async function handleLogout() {

@@ -1,0 +1,38 @@
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Body,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
+import { TwoFactorService } from './two-factor.service';
+import { CurrentUser } from '../security/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../security/guards/jwt-auth.guard';
+import { Enable2FADto } from './dto/enable-2fa.dto';
+// import { Enable2FADto } from './dto/enable-2fa.dto';
+
+@Controller('auth/2fa')
+export class TwoFactorController {
+  constructor(private twoFactorService: TwoFactorService) {}
+
+  @Get('setup')
+  @UseGuards(JwtAuthGuard)
+  async setup(@CurrentUser('userId') userId: string) {
+    console.log('Generating 2FA secret for user:', userId);
+    const { secret, qrCode } =
+      await this.twoFactorService.generateSecret(userId);
+    return { secret, qrCode };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @Post('enable')
+  enable(
+    @Body() enableDto: Enable2FADto,
+    @CurrentUser('userId') userId: string,
+  ) {
+    return this.twoFactorService.enableTwoFactor(userId, enableDto.code);
+  }
+}

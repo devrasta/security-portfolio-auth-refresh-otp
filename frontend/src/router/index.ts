@@ -26,6 +26,11 @@ const router = createRouter({
       component: LoginView,
     },
     {
+      path: '/2fa/setup',
+      name: '2fa-setup',
+      component: () => import('../views/TwoFactorVerifierView.vue'),
+    },
+    {
       path: '/',
       component: DashboardLayout,
       children: [
