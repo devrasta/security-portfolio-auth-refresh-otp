@@ -10,7 +10,7 @@ import { ValidationService } from '@/modules/security/validation.service';
 import { JwtManagerService } from '@/modules/security/jwtManager.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import * as crypto from 'node:crypto';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface IRefreshTokenPayload {

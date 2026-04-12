@@ -1,0 +1,41 @@
+meta {
+  name: enable-2fa
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api_url}}/auth/2fa/enable
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "code": "123456"
+  }
+}
+
+docs {
+  # Enable 2FA
+
+  Active le 2FA sur le compte de l'utilisateur en verifiant un code TOTP genere depuis le secret obtenu via `/auth/2fa/setup`.
+  A appeler apres avoir scanne le QR code et obtenu un code valide depuis l'app TOTP.
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Body** :
+  - `code` : code TOTP a 6 chiffres genere par l'app authenticator
+
+  **Erreurs** :
+  - 401 : Code TOTP invalide ou expire
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import * as crypto from 'node:crypto';
 import { generateSecret, generateURI, verify } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,10 +11,10 @@ export class TwoFactorService {
     private hashService: HashService,
   ) {}
 
-  private generateBackupCodes(count: number): string[] {
+  generateBackupCodes(count: number): string[] {
     const codes: string[] = [];
     for (let i = 0; i < count; i++) {
-      const code = crypto.randomBytes(4).toString('hex').toUpperCase();
+      const code = this.hashService.generateSecureToken(4);
       codes.push(code);
     }
     return codes;
@@ -88,5 +87,55 @@ export class TwoFactorService {
     });
 
     return { backupCodes };
+  }
+
+  async verifyCode(userId: string, token: string): Promise<boolean> {
+    const twoFactorSecret = await this.prisma.twoFactorSecret.findUnique({
+      where: { userId, isEnabled: true },
+    });
+
+    if (!twoFactorSecret) {
+      return false;
+    }
+
+    if (token.length === 6 && /^\d{6}$/.test(token)) {
+      // ✅ CORRECT: Vérifier TOTP
+      const verifyResult = await verify({
+        secret: twoFactorSecret.secret,
+        token,
+      });
+      return verifyResult.valid;
+    } else if (token.length === 8 && /^[A-F0-9]{8}$/i.test(token)) {
+      // Vérifier backup code
+      return this.verifyBackupCode(userId, token.toUpperCase());
+    }
+
+    return false;
+  }
+
+  async verifyBackupCode(userId: string, code: string): Promise<boolean> {
+    const twoFactorSecret = await this.prisma.twoFactorSecret.findUnique({
+      where: { userId, isEnabled: true },
+      select: { backupCodes: true },
+    });
+
+    if (!twoFactorSecret) {
+      return false;
+    }
+
+    // Vérifier si le code est dans la liste des codes de secours
+    const isBackupCodeValid = twoFactorSecret.backupCodes.some((hashedCode) =>
+      this.hashService.verifyPassword(hashedCode, code),
+    );
+
+    return isBackupCodeValid;
+  }
+
+  async isTwoFactorEnabled(userId: string): Promise<boolean> {
+    const twoFactorSecret = await this.prisma.twoFactorSecret.findUnique({
+      where: { userId, isEnabled: true },
+    });
+
+    return !!twoFactorSecret;
   }
 }

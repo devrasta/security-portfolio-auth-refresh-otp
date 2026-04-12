@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import * as crypto from 'node:crypto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class HashService {
@@ -60,6 +60,6 @@ export class HashService {
    * @returns String hexadécimal
    */
   generateSecureToken(bytes: number = 32): string {
-    return crypto.randomBytes(bytes).toString('hex');
+    return crypto.randomBytes(bytes).toString('hex').toUpperCase();
   }
 }

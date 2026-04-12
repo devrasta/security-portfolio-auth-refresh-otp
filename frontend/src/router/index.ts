@@ -26,8 +26,8 @@ const router = createRouter({
       component: LoginView,
     },
     {
-      path: '/2fa/setup',
-      name: '2fa-setup',
+      path: '/login/totp',
+      name: 'login-totp',
       component: () => import('../views/TwoFactorVerifierView.vue'),
     },
     {

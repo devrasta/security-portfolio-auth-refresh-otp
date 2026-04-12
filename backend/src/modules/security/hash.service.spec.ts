@@ -126,6 +126,4 @@ describe('HashService', () => {
       expect(t1).not.toBe(t2);
     });
   });
-
 });
-

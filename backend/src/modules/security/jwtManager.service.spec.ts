@@ -59,7 +59,6 @@ describe('JwtManagerService', () => {
 
     service = module.get<JwtManagerService>(JwtManagerService);
     nestJwtService = module.get(NestJwtService);
-    configService = module.get(ConfigService);
     prisma = module.get(PrismaService);
     hashService = module.get(HashService);
     jest.clearAllMocks();

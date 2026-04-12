@@ -32,6 +32,7 @@ describe('AuthService', () => {
   const mockValidationService = {
     isValidEmail: jest.fn().mockReturnValue(true),
     isStrongPassword: jest.fn().mockReturnValue(true),
+    getPasswordStrength: jest.fn().mockReturnValue(4),
   };
 
   const mockTokenService = {

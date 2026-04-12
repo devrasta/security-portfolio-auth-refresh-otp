@@ -67,5 +67,16 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
   }
 
-  return { isAuthenticated, accessToken, register, user, login, logout, init, handleUnauthorized }
+  async function changePassword(currentPassword: string, newPassword: string) {
+    return authApi.changePassword(accessToken.value as string, currentPassword, newPassword)
+  }
+
+  function setTwoFactorEnabled(enabled: boolean) {
+    if (user.value) {
+      user.value = { ...user.value, twoFactorEnabled: enabled }
+      localStorage.setItem('user', JSON.stringify(user.value))
+    }
+  }
+
+  return { isAuthenticated, accessToken, register, user, login, logout, init, handleUnauthorized, changePassword, setTwoFactorEnabled }
 })

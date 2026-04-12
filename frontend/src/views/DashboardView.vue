@@ -12,16 +12,6 @@
     <div>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
-          label="Authentification à deux facteurs"
-          :value="authStore.user?.twoFactorEnabled ? 'Activé' : 'Désactivé'"
-          color="indigo"
-          :icon="User"
-        >
-          <template #action>
-            <input type="checkbox" v-model="twoFactorEnabled" @input="display2FASetupBlock" class="toggle toggle-indigo" />
-          </template>
-        </StatCard>
-        <StatCard
           label="Sessions actives"
           :value="`${sessions.length} session${sessions.length > 1 ? 's' : ''}`"
           color="green"
@@ -38,22 +28,6 @@
 
 
 
-
-    <div v-if="twoFactorEnabled" class="card bg-base-100 w-96 shadow-sm">
-      <figure>
-        <img
-                :src="qrCodeUrl"
-                alt="Authentification à deux facteurs QR Code" />
-      </figure>
-      <div class="card-body">
-        <h2 class="card-title">Scannez votre QR Code pour l'activer</h2>
-        <div class="card-actions justify-end">
-          <button class="btn bg-indigo-500 text-white" @click.prevent="activate2FA">Activer </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="divider"></div>
 
     <div class="bg-white shadow rounded-lg">
       <div class="px-5 py-4 border-b border-gray-200">
@@ -140,18 +114,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import StatCard from '@/components/StatCard.vue'
-import { sessionsApi, activityApi, twoFactorApi, type Session, type ActivityLog } from '@/services/api/auth.api'
-import { User, ShieldCheck, Zap } from 'lucide-vue-next'
+import { sessionsApi, activityApi, type Session, type ActivityLog } from '@/services/api/auth.api'
+import { ShieldCheck, Zap } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
 const sessions = ref<Session[]>([])
 const recentActivity = ref<ActivityLog[]>([])
 const loading = ref(true)
-const qrCodeUrl = ref<string>('')
-const secretTOTP = ref<string>('')
 const userName = computed(() => authStore.user?.name || authStore.user?.email)
-
 
 const lastLogin = computed(() =>
   recentActivity.value.find((log) => log.action === 'LOGIN_SUCCESS'),
@@ -160,7 +131,6 @@ const lastLogin = computed(() =>
 const loginCount = computed(
   () => recentActivity.value.filter((log) => log.action === 'LOGIN_SUCCESS').length,
 )
-const twoFactorEnabled = ref(authStore.user?.twoFactorEnabled || false)
 
 onMounted(async () => {
   const token = authStore.accessToken
@@ -249,21 +219,5 @@ function activityDotClass(action: string): string {
     default:
       return 'bg-gray-400'
   }
-}
-const display2FASetupBlock = async () => {
-  twoFactorEnabled.value = true
-  const { qrCode, secret } = await twoFactorApi.setup(authStore.accessToken!)
-  qrCodeUrl.value = qrCode
-  secretTOTP.value = secret
-}
-const activate2FA = async () => {
-  // try {
-  //   await twoFactorApi.activate(authStore.accessToken!, secretTOTP.value)
-  //   authStore.setTwoFactorEnabled(true)
-  //   alert('2FA activated successfully!')
-  // } catch (error) {
-  //   console.error('Failed to activate 2FA:', error)
-  //   alert('Failed to activate 2FA. Please try again.')
-  // }
 }
 </script>

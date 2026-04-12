@@ -8,7 +8,12 @@ export class ValidationService {
   }
 
   isStrongPassword(password: string): boolean {
-    return this.getPasswordStrength(password) >= 4;
+    if (!password || password.length < 12) return false;
+    if (!/[a-z]/.test(password)) return false;
+    if (!/[A-Z]/.test(password)) return false;
+    if (!/\d/.test(password)) return false;
+    if (!/[@$!%*?&#_\-]/.test(password)) return false;
+    return true;
   }
 
   getPasswordStrength(password: string): number {
@@ -25,7 +30,7 @@ export class ValidationService {
     // Character variety checks
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
     if (/\d/.test(password)) strength++;
-    if (/[@$!%*?&#-_]/.test(password)) strength++;
+    if (/[@$!%*?&#_\-]/.test(password)) strength++;
 
     return Math.min(strength, 4);
   }

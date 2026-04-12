@@ -169,6 +169,24 @@ export const authApi = {
       },
     })
   },
+
+  /**
+   * Change Password
+   * Nécessite un access token valide
+   */
+  async changePassword(
+    accessToken: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    return fetchApi<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+  },
 }
 
 // ════════════════════════════════════════════════════════
