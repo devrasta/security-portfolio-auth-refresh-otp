@@ -3,21 +3,40 @@ import { defineStore } from 'pinia'
 import { authApi } from '@/services/api/auth.api'
 import { type RegisterCredentials, type LoginCredentials } from '@/services/api/auth.api'
 
+type AuthUser = { id: string; email: string; name?: string; twoFactorEnabled: boolean }
+
+function loadUser(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem('user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(localStorage.getItem('accessToken'))
-  const user = ref<{ id: string; email: string; name?: string } | null>(null)
+  const user = ref<AuthUser | null>(loadUser())
 
   const isAuthenticated = computed(() => !!user.value && !!accessToken.value)
 
   async function init() {
-    // Au reload, on tente un refresh via le cookie httpOnly
-    // pour obtenir un access token frais + les infos user
     try {
       await refreshToken()
     } catch {
-      accessToken.value = null
-      localStorage.removeItem('accessToken')
+      if (!user.value) {
+        accessToken.value = null
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('user')
+      }
     }
+  }
+
+  function handleUnauthorized() {
+    accessToken.value = null
+    user.value = null
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
   }
 
   async function refreshToken() {
@@ -25,15 +44,20 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = response.accessToken
     user.value = response.user
     localStorage.setItem('accessToken', response.accessToken)
+    localStorage.setItem('user', JSON.stringify(response.user))
   }
 
   async function login(loginCredentials: LoginCredentials) {
-    const response = await authApi.login(loginCredentials)
-
-    accessToken.value = response.accessToken
-    user.value = response.user
-    localStorage.setItem('accessToken', response.accessToken)
-    return;
+    const loginResponse = await authApi.login(loginCredentials)
+    if ('twoFactorRequired' in loginResponse) {
+      accessToken.value = loginResponse.accessToken
+      localStorage.setItem('accessToken', loginResponse.accessToken)
+      return { twoFactorRequired: true }
+    }
+    accessToken.value = loginResponse.accessToken
+    user.value = loginResponse.user
+    localStorage.setItem('accessToken', loginResponse.accessToken)
+    localStorage.setItem('user', JSON.stringify(loginResponse.user))
   }
 
   function register(userToCreate: RegisterCredentials) {
@@ -45,7 +69,19 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = null
     user.value = null
     localStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
   }
 
-  return { isAuthenticated, accessToken, register, user, login, logout, init }
+  async function changePassword(currentPassword: string, newPassword: string) {
+    return authApi.changePassword(accessToken.value as string, currentPassword, newPassword)
+  }
+
+  function setTwoFactorEnabled(enabled: boolean) {
+    if (user.value) {
+      user.value = { ...user.value, twoFactorEnabled: enabled }
+      localStorage.setItem('user', JSON.stringify(user.value))
+    }
+  }
+
+  return { isAuthenticated, accessToken, register, user, login, logout, init, handleUnauthorized, changePassword, setTwoFactorEnabled }
 })

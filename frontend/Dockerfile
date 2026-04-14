@@ -1,7 +1,7 @@
 # =========================================
 # Stage 1: Build the Vue.js Application
 # =========================================
-ARG NODE_VERSION=22.12.0-alpine
+ARG NODE_VERSION=22.13.0-alpine
 ARG NGINX_VERSION=alpine3.22
 
 # Use a lightweight Node.js image for building (customizable via ARG)
@@ -17,7 +17,10 @@ COPY package.json yarn.lock ./
 RUN --mount=type=cache,target=/root/.yarn yarn install --frozen-lockfile
 
 # Copy the rest of the application source code into the container
-COPY . .
+# Explicit COPY of src/ ensures Docker cache is invalidated on source changes
+COPY public/ ./public/
+COPY src/ ./src/
+COPY index.html tsconfig*.json vite.config.ts ./
 
 # Accept build argument for Vite API URL
 ARG VITE_API_URL

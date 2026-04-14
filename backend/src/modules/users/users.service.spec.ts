@@ -55,6 +55,7 @@ describe('UsersService', () => {
           email: true,
           name: true,
           password: true,
+          twoFactorEnabled: true,
           createdAt: true,
         },
         where: { email: 'test@example.com' },

@@ -30,7 +30,11 @@ export class JwtManagerService {
     );
   }
 
-  async generateRefreshToken(userId: string, tokenFamily: string) {
+  async generateRefreshToken(
+    userId: string,
+    tokenFamily: string,
+    deviceInfo?: { deviceId?: string; userAgent?: string; ipAddress?: string },
+  ) {
     const jti = crypto.randomBytes(16).toString('hex');
 
     const refreshToken = await this.nestJwtService.signAsync(
@@ -38,7 +42,7 @@ export class JwtManagerService {
         sub: userId,
         type: 'refresh',
         jti,
-        family: tokenFamily, // ← Dans le payload JWT
+        family: tokenFamily,
       },
       {
         secret: process.env.JWT_REFRESH_SECRET,
@@ -54,6 +58,9 @@ export class JwtManagerService {
         tokenFamily,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         isRevoked: false,
+        deviceId: deviceInfo?.deviceId,
+        userAgent: deviceInfo?.userAgent,
+        ipAddress: deviceInfo?.ipAddress,
       },
     });
 
@@ -61,7 +68,9 @@ export class JwtManagerService {
   }
 
   verifyAccessToken(token: string): JwtPayload {
-    return this.nestJwtService.verify(token, this.config.get('JWT_SECRET'));
+    return this.nestJwtService.verify(token, {
+      secret: this.config.get('JWT_SECRET'),
+    });
   }
 
   async verifyRefreshToken(token: string) {

@@ -1,4 +1,5 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ActivityService } from './activity.service';
 import { JwtAuthGuard } from '@/modules/security/guards/jwt-auth.guard';
 import {
@@ -7,6 +8,7 @@ import {
 } from '@/modules/security/decorators/current-user.decorator';
 import { ActivityAction } from '@/modules/prisma/generated/client';
 
+@SkipThrottle({ default: true, loginByEmail: true })
 @Controller('activity')
 @UseGuards(JwtAuthGuard)
 export class ActivityController {

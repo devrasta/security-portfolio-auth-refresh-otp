@@ -6,7 +6,7 @@ export class ChangePasswordDto {
 
   @IsString()
   @MinLength(12, { message: 'Password must be at least 12 characters' })
-  @MaxLength(128)
+  @MaxLength(40)
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message:
       'Password must contain uppercase, lowercase, and number/special char',

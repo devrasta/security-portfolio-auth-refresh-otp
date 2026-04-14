@@ -5,8 +5,8 @@ services:
     container_name: auth-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-auth_db}
-      POSTGRES_USER: ${DB_USER:-auth_user}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - auth-db-data:/var/lib/postgresql/data

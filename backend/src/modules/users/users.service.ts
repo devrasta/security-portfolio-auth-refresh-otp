@@ -14,6 +14,7 @@ export class UsersService {
         email: true,
         name: true,
         password: true,
+        twoFactorEnabled: true,
         createdAt: true,
       },
       where: {
@@ -57,6 +58,30 @@ export class UsersService {
       },
       data: {
         password: hashedPassword,
+      },
+    });
+  }
+
+  async toggleTwoFactor(
+    userId: string,
+    enabled: boolean,
+  ): Promise<{ twoFactorEnabled: boolean }> {
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { twoFactorEnabled: enabled },
+      select: { twoFactorEnabled: true },
+    });
+    return updated;
+  }
+
+  async getProfile(userId: string): Promise<Partial<User>> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        name: true,
+        twoFactorEnabled: true,
+        createdAt: true,
       },
     });
   }

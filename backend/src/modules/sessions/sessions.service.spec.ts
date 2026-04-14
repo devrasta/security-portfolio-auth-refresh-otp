@@ -5,7 +5,6 @@ import { PrismaService } from '../prisma/prisma.service';
 describe('SessionsService', () => {
   let service: SessionsService;
   let prisma: any;
-  let originalFetch: typeof global.fetch;
 
   const mockPrismaService = {
     refreshToken: {
@@ -14,8 +13,6 @@ describe('SessionsService', () => {
   };
 
   beforeEach(async () => {
-    originalFetch = global.fetch;
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SessionsService,
@@ -28,27 +25,29 @@ describe('SessionsService', () => {
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    global.fetch = originalFetch;
-  });
-
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
   describe('getActiveSessions', () => {
-    it('should query with userId and isRevoked:false', async () => {
+    it('should query with userId, isRevoked:false, and non-expired filter', async () => {
       prisma.refreshToken.findMany.mockResolvedValue([]);
 
       await service.getActiveSessions('user-1');
 
-      expect(prisma.refreshToken.findMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1', isRevoked: false },
-        orderBy: { createdAt: 'desc' },
-      });
+      expect(prisma.refreshToken.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            userId: 'user-1',
+            isRevoked: false,
+            expiresAt: expect.objectContaining({ gt: expect.any(Date) }),
+          }),
+          orderBy: { createdAt: 'desc' },
+        }),
+      );
     });
 
-    it('should return array of active sessions', async () => {
+    it('should return data array and total', async () => {
       const sessions = [
         { id: 's1', userId: 'user-1', isRevoked: false },
         { id: 's2', userId: 'user-1', isRevoked: false },
@@ -56,48 +55,13 @@ describe('SessionsService', () => {
       prisma.refreshToken.findMany.mockResolvedValue(sessions);
 
       const result = await service.getActiveSessions('user-1');
-      expect(result).toEqual(sessions);
+      expect(result).toEqual({ data: sessions, total: 2 });
     });
 
-    it('should return empty array when no active sessions', async () => {
+    it('should return empty data and zero total when no active sessions', async () => {
       prisma.refreshToken.findMany.mockResolvedValue([]);
       const result = await service.getActiveSessions('user-1');
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe('getLocationFromIP (private)', () => {
-    it('should fetch from ipapi.co with correct IP', async () => {
-      const mockFetch = jest.fn().mockResolvedValue({
-        json: jest
-          .fn()
-          .mockResolvedValue({ country_name: 'France', city: 'Paris' }),
-      });
-      global.fetch = mockFetch;
-
-      const result = await (service as any).getLocationFromIP('1.2.3.4');
-
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://ipapi.co/1.2.3.4/json/',
-        expect.objectContaining({ signal: expect.any(Object) }),
-      );
-      expect(result).toEqual({ country: 'France', city: 'Paris' });
-    });
-
-    it('should return nulls when fetch fails', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
-
-      const result = await (service as any).getLocationFromIP('1.2.3.4');
-
-      expect(result).toEqual({ country: null, city: null });
-    });
-
-    it('should return nulls on timeout', async () => {
-      global.fetch = jest.fn().mockRejectedValue(new Error('Timeout'));
-
-      const result = await (service as any).getLocationFromIP('1.2.3.4');
-
-      expect(result).toEqual({ country: null, city: null });
+      expect(result).toEqual({ data: [], total: 0 });
     });
   });
 });

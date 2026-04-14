@@ -1,83 +1,43 @@
 <template>
   <div class="space-y-8">
-    <!-- Welcome Header -->
     <div>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">
-        Welcome back, {{ userName }}!
+      <h1 class="text-2xl font-semibold text-gray-900">
+        Bienvenue, {{ userName }}
       </h1>
-      <p v-if="lastLogin" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <p v-if="lastLogin" class="mt-1 text-sm text-gray-500">
         Last login: {{ formatDate(lastLogin.createdAt) }}
       </p>
     </div>
 
-    <!-- Quick Stats -->
-    <div>
-      <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-        Quick Stats
-      </h2>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <!-- Account -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-5">
-          <div class="flex items-center">
-            <div class="shrink-0 rounded-md bg-indigo-50 dark:bg-indigo-900/30 p-3">
-              <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Account</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">Active</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Security -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-5">
-          <div class="flex items-center">
-            <div class="shrink-0 rounded-md bg-green-50 dark:bg-green-900/30 p-3">
-              <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Security</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ sessions.length }} session{{ sessions.length > 1 ? 's' : '' }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Activity -->
-        <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-5">
-          <div class="flex items-center">
-            <div class="shrink-0 rounded-md bg-amber-50 dark:bg-amber-900/30 p-3">
-              <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Activity</p>
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ loginCount }} login{{ loginCount > 1 ? 's' : '' }}
-              </p>
-            </div>
-          </div>
+    <!-- 2FA banner -->
+    <div v-if="!twoFactorEnabled" class="rounded-lg bg-amber-50 border border-amber-200 p-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5 shrink-0 text-amber-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+        </svg>
+        <div>
+          <p class="text-sm font-medium text-amber-800">Authentification à deux facteurs désactivée</p>
+          <p class="text-xs text-amber-700 mt-0.5">Renforcez la sécurité de votre compte en activant la 2FA.</p>
         </div>
       </div>
+      <RouterLink
+        to="/security"
+        class="shrink-0 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-amber-500"
+      >
+        Activer la 2FA
+      </RouterLink>
     </div>
 
-    <!-- Active Sessions -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-      <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white">
-          Active Sessions ({{ sessions.length }})
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-5 py-4 border-b border-gray-200">
+        <h2 class="text-base font-semibold text-gray-900">
+          Sessions actives ({{ sessions.length }})
         </h2>
       </div>
-      <div v-if="loading" class="p-5 text-center text-sm text-gray-500 dark:text-gray-400">
+      <div v-if="loading" class="p-5 text-center text-sm text-gray-500">
         Loading...
       </div>
-      <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+      <ul v-else class="divide-y divide-gray-200">
         <li v-for="session in sessions" :key="session.id" class="px-5 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-start gap-3">
@@ -90,104 +50,78 @@
                 </svg>
               </div>
               <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                <p class="text-sm font-medium text-gray-900">
                   {{ parseUserAgent(session.userAgent) }}
                 </p>
-                <p v-if="session.ipAddress" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <p v-if="session.ipAddress" class="text-xs text-gray-500 mt-0.5">
                   IP: {{ session.ipAddress }}
                 </p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                <p class="text-xs text-gray-500 mt-0.5">
                   Created: {{ formatDate(session.createdAt) }}
                 </p>
               </div>
             </div>
             <button
               @click="revokeSession(session.id)"
-              class="text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+              class="text-xs font-medium text-red-600 hover:text-red-800"
             >
               Revoke
             </button>
           </div>
         </li>
-        <li v-if="sessions.length === 0" class="px-5 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+        <li v-if="sessions.length === 0" class="px-5 py-4 text-sm text-gray-500 text-center">
           No active sessions
         </li>
       </ul>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-      <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 class="text-base font-semibold text-gray-900 dark:text-white">
-          Recent Activity
+    <div class="bg-white shadow rounded-lg">
+      <div class="px-5 py-4 border-b border-gray-200">
+        <h2 class="text-base font-semibold text-gray-900">
+          Activités récentes
         </h2>
       </div>
-      <div v-if="loading" class="p-5 text-center text-sm text-gray-500 dark:text-gray-400">
+      <div v-if="loading" class="p-5 text-center text-sm text-gray-500">
         Loading...
       </div>
-      <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700">
+      <ul v-else class="divide-y divide-gray-200">
         <li v-for="log in recentActivity" :key="log.id" class="px-5 py-3 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span :class="activityDotClass(log.action)" class="h-2 w-2 rounded-full shrink-0"></span>
             <div>
-              <p class="text-sm text-gray-900 dark:text-white">{{ formatAction(log.action) }}</p>
-              <p v-if="log.city || log.country" class="text-xs text-gray-500 dark:text-gray-400">
+              <p class="text-sm text-gray-900">{{ formatAction(log.action) }}</p>
+              <p v-if="log.city || log.country" class="text-xs text-gray-500">
                 {{ [log.city, log.country].filter(Boolean).join(', ') }}
               </p>
             </div>
           </div>
-          <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-4">
+          <span class="text-xs text-gray-500 whitespace-nowrap ml-4">
             {{ formatDate(log.createdAt) }}
           </span>
         </li>
-        <li v-if="recentActivity.length === 0" class="px-5 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+        <li v-if="recentActivity.length === 0" class="px-5 py-4 text-sm text-gray-500 text-center">
           No recent activity
         </li>
       </ul>
     </div>
 
-    <!-- Quick Actions -->
-    <div>
-      <h2 class="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-        Quick Actions
-      </h2>
-      <div class="flex flex-wrap gap-3">
-        <RouterLink
-          to="/profile"
-          class="inline-flex items-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow ring-1 ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          Update Profile
-        </RouterLink>
-        <RouterLink
-          to="/security"
-          class="inline-flex items-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow ring-1 ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          Change Password
-        </RouterLink>
-        <RouterLink
-          to="/activity"
-          class="inline-flex items-center rounded-md bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow ring-1 ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          View All Activity
-        </RouterLink>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import StatCard from '@/components/StatCard.vue'
 import { sessionsApi, activityApi, type Session, type ActivityLog } from '@/services/api/auth.api'
+import { ShieldCheck, Zap } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 
 const sessions = ref<Session[]>([])
 const recentActivity = ref<ActivityLog[]>([])
 const loading = ref(true)
-
-const userName = computed(() => authStore.user?.name || authStore.user?.email || 'User')
+const userName = computed(() => authStore.user?.name || authStore.user?.email)
+const twoFactorEnabled = computed(() => authStore.user?.twoFactorEnabled ?? true)
 
 const lastLogin = computed(() =>
   recentActivity.value.find((log) => log.action === 'LOGIN_SUCCESS'),
@@ -258,11 +192,13 @@ function isMobile(ua: string | null): boolean {
 }
 
 const actionLabels: Record<string, string> = {
-  LOGIN_SUCCESS: 'Successful login',
-  LOGIN_FAILURE: 'Failed login attempt',
-  LOGOUT: 'Logged out',
-  TOKEN_REFRESH: 'Token refreshed',
-  PASSWORD_CHANGE: 'Password changed',
+  LOGIN_SUCCESS: 'Connexion réussie',
+  LOGIN_FAILURE: 'Échec de connexion',
+  LOGOUT: 'Déconnexion',
+  TOKEN_REFRESH: 'Token rafraîchi',
+  PASSWORD_CHANGE: 'Mot de passe modifié',
+  TWO_FACTOR_ENABLED: 'Authentification à deux facteurs activée',
+  TWO_FACTOR_DISABLED: 'Authentification à deux facteurs désactivée',
 }
 
 function formatAction(action: string): string {

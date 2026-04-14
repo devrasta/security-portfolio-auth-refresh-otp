@@ -1,0 +1,51 @@
+meta {
+  name: login-2fa
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{api_url}}/auth/login/2fa
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "accessToken": "{{two_factor_temp_token}}",
+    "code": "123456"
+  }
+}
+
+script:post-response {
+  if (res.status === 200) {
+    bru.setVar("access_token", res.body.accessToken);
+  }
+}
+
+docs {
+  # Login avec 2FA
+
+  Finalise l'authentification apres un login qui a retourne `twoFactorRequired: true`.
+  Accepte aussi bien un code TOTP (6 chiffres) qu'un code de secours (8 caracteres hex).
+
+  **Prerequis** : avoir appele `/auth/login` et recupere `two_factor_temp_token` dans la variable Bruno.
+
+  **Body** :
+  - `accessToken` : token temporaire retourne par `/auth/login` (variable `two_factor_temp_token`)
+  - `code` : code TOTP 6 chiffres OU code de secours 8 caracteres hexadecimaux
+
+  **Reponse** :
+  - `accessToken` : JWT d'acces definitif (15 min)
+  - `user` : `{ id, name }`
+  - Le refresh token est set dans le cookie httpOnly `refreshToken`
+
+  **Erreurs** :
+  - 401 : token temporaire invalide ou expire
+  - 401 : code 2FA invalide
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

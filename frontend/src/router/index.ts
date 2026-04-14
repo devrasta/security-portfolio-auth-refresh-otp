@@ -26,6 +26,11 @@ const router = createRouter({
       component: LoginView,
     },
     {
+      path: '/login/totp',
+      name: 'login-totp',
+      component: () => import('../views/TwoFactorVerifierView.vue'),
+    },
+    {
       path: '/',
       component: DashboardLayout,
       children: [
@@ -45,24 +50,11 @@ const router = createRouter({
           component: () => import('../views/SecurityView.vue'),
         },
         {
-          path: 'notifications',
-          name: 'notifications',
-          component: () => import('../views/NotificationsView.vue'),
-        },
-        {
           path: 'activity',
           name: 'activity',
           component: () => import('../views/ActivityView.vue'),
         },
       ],
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
     },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: NotFound },
   ],
@@ -75,10 +67,14 @@ router.beforeEach(async (to) => {
 
   if (!initialized) {
     initialized = true
-    await authStore.init()
+    if (!authStore.isAuthenticated) {
+      await authStore.init()
+    } else {
+      authStore.init()
+    }
   }
 
-  const publicPages = ['/login', '/register', '/', '/about']
+  const publicPages = ['/login', '/login/totp', '/register', '/', '/about']
   if (!authStore.isAuthenticated && !publicPages.includes(to.path)) {
     return { name: 'login' }
   }

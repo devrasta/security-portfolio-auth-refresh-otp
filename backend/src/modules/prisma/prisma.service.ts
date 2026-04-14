@@ -15,7 +15,7 @@ export class PrismaService
     const adapter = new PrismaPg(pool);
     super({
       adapter,
-      log: ['query', 'error', 'warn'],
+      log: ['error', 'warn'],
       errorFormat: 'pretty',
     });
     this.pool = pool;

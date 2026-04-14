@@ -1,0 +1,33 @@
+meta {
+  name: setup-2fa
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api_url}}/auth/2fa/setup
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+docs {
+  # Setup 2FA
+
+  Genere un secret TOTP et un QR code pour configurer l'authentification a deux facteurs.
+  A appeler avant d'activer le 2FA. Le QR code est a scanner dans une app TOTP (ex: Google Authenticator, Authy).
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Reponse** :
+  - `secret` : secret TOTP en base32 (a conserver)
+  - `qrCode` : data URL de l'image QR code (base64)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

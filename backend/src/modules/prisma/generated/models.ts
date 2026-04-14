@@ -11,4 +11,5 @@
 export type * from './models/User'
 export type * from './models/RefreshToken'
 export type * from './models/ActivityLog'
+export type * from './models/TwoFactorSecret'
 export type * from './commonInputTypes'

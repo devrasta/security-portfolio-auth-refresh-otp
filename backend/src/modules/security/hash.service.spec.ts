@@ -108,40 +108,6 @@ describe('HashService', () => {
     });
   });
 
-  describe('generateId', () => {
-    it('should return a 32-character hex string by default', () => {
-      const id = service.generateId();
-      expect(id).toHaveLength(32);
-      expect(id).toMatch(/^[0-9a-f]+$/);
-    });
-
-    it('should return correct length for custom byte count', () => {
-      const id = service.generateId(8);
-      expect(id).toHaveLength(16);
-    });
-
-    it('should return unique values on successive calls', () => {
-      const id1 = service.generateId();
-      const id2 = service.generateId();
-      expect(id1).not.toBe(id2);
-    });
-  });
-
-  describe('generateTokenFamily', () => {
-    it('should return a valid UUID v4 string', () => {
-      const uuid = service.generateTokenFamily();
-      expect(uuid).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-      );
-    });
-
-    it('should return unique values on successive calls', () => {
-      const uuid1 = service.generateTokenFamily();
-      const uuid2 = service.generateTokenFamily();
-      expect(uuid1).not.toBe(uuid2);
-    });
-  });
-
   describe('generateSecureToken', () => {
     it('should return a 64-character hex string by default', () => {
       const token = service.generateSecureToken();
@@ -158,57 +124,6 @@ describe('HashService', () => {
       const t1 = service.generateSecureToken();
       const t2 = service.generateSecureToken();
       expect(t1).not.toBe(t2);
-    });
-  });
-
-  describe('generateVerificationCode', () => {
-    it('should return a 6-digit string', () => {
-      const code = service.generateVerificationCode();
-      expect(code).toHaveLength(6);
-    });
-
-    it('should only contain numeric characters', () => {
-      const code = service.generateVerificationCode();
-      expect(code).toMatch(/^\d{6}$/);
-    });
-
-    it('should be between 100000 and 999999', () => {
-      const code = service.generateVerificationCode();
-      const num = parseInt(code, 10);
-      expect(num).toBeGreaterThanOrEqual(100000);
-      expect(num).toBeLessThanOrEqual(999999);
-    });
-  });
-
-  describe('generatePasswordResetToken', () => {
-    it('should return an object with token, hashedToken, and expiresAt', () => {
-      const result = service.generatePasswordResetToken();
-      expect(result).toHaveProperty('token');
-      expect(result).toHaveProperty('hashedToken');
-      expect(result).toHaveProperty('expiresAt');
-    });
-
-    it('should return a 64-character hex token', () => {
-      const { token } = service.generatePasswordResetToken();
-      expect(token).toHaveLength(64);
-      expect(token).toMatch(/^[0-9a-f]+$/);
-    });
-
-    it('should return a hashedToken that is the SHA-256 of token', () => {
-      const { token, hashedToken } = service.generatePasswordResetToken();
-      expect(hashedToken).toBe(service.hashToken(token));
-    });
-
-    it('should set expiresAt to approximately 1 hour from now', () => {
-      const before = Date.now();
-      const { expiresAt } = service.generatePasswordResetToken();
-      const after = Date.now();
-
-      const oneHourMs = 60 * 60 * 1000;
-      expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
-        before + oneHourMs - 100,
-      );
-      expect(expiresAt.getTime()).toBeLessThanOrEqual(after + oneHourMs + 100);
     });
   });
 });

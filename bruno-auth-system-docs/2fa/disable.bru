@@ -1,0 +1,42 @@
+meta {
+  name: disable-2fa
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{api_url}}/auth/2fa/disable
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{access_token}}
+}
+
+body:json {
+  {
+    "code": "123456"
+  }
+}
+
+docs {
+  # Disable 2FA
+
+  Desactive le 2FA sur le compte de l'utilisateur connecte apres verification d'un code TOTP ou d'un code de secours.
+  Supprime le secret TOTP stocke en base (la re-activation necessitera un nouveau passage par `/auth/2fa/setup`).
+
+  **Requiert** : JwtAuthGuard (Bearer token)
+
+  **Body** :
+  - `code` : code TOTP 6 chiffres OU code de secours 8 caracteres hexadecimaux
+
+  **Erreurs** :
+  - 400 : 2FA non active sur ce compte
+  - 400 : code invalide
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
