@@ -6,6 +6,13 @@ ARG NGINX_VERSION=alpine3.22
 
 FROM node:${NODE_VERSION}-alpine AS builder
 
+# Enable yarn via Corepack (required for Node 22+)
+RUN corepack enable
+
+# Force development mode so yarn installs devDependencies (typescript, nest CLI, etc.)
+# Required because Coolify injects NODE_ENV=production as a build arg in all stages
+ENV NODE_ENV=development
+
 # Set working directory
 WORKDIR /app
 
@@ -41,6 +48,8 @@ RUN ls -la dist/ && test -f dist/main.js || (echo "Error: dist/main.js not found
 # Stage 2: Production Dependencies
 # =========================================
 FROM node:${NODE_VERSION}-alpine AS deps
+
+RUN corepack enable
 
 WORKDIR /app
 

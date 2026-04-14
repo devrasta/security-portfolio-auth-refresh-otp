@@ -7,6 +7,9 @@ ARG NGINX_VERSION=alpine3.22
 # Use a lightweight Node.js image for building (customizable via ARG)
 FROM node:${NODE_VERSION} AS builder
 
+# Enable yarn via Corepack (required for Node 22+)
+RUN corepack enable
+
 # Force development mode so yarn installs devDependencies (vite, typescript, etc.)
 # Required because Coolify injects NODE_ENV=production as a build arg in all stages
 ENV NODE_ENV=development
