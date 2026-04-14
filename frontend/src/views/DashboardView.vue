@@ -9,25 +9,24 @@
       </p>
     </div>
 
-    <div>
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Sessions actives"
-          :value="`${sessions.length} session${sessions.length > 1 ? 's' : ''}`"
-          color="green"
-          :icon="ShieldCheck"
-        />
-        <StatCard
-          label="Nombre de connexions"
-          :value="`${loginCount} login${loginCount > 1 ? 's' : ''}`"
-          color="amber"
-          :icon="Zap"
-        />
+    <!-- 2FA banner -->
+    <div v-if="!twoFactorEnabled" class="rounded-lg bg-amber-50 border border-amber-200 p-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-5 w-5 shrink-0 text-amber-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+        </svg>
+        <div>
+          <p class="text-sm font-medium text-amber-800">Authentification à deux facteurs désactivée</p>
+          <p class="text-xs text-amber-700 mt-0.5">Renforcez la sécurité de votre compte en activant la 2FA.</p>
+        </div>
       </div>
+      <RouterLink
+        to="/security"
+        class="shrink-0 rounded-md bg-amber-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-amber-500"
+      >
+        Activer la 2FA
+      </RouterLink>
     </div>
-
-
-
 
     <div class="bg-white shadow rounded-lg">
       <div class="px-5 py-4 border-b border-gray-200">
@@ -76,11 +75,10 @@
       </ul>
     </div>
 
-    <!-- Recent Activity -->
     <div class="bg-white shadow rounded-lg">
       <div class="px-5 py-4 border-b border-gray-200">
         <h2 class="text-base font-semibold text-gray-900">
-          Recent Activity
+          Activités récentes
         </h2>
       </div>
       <div v-if="loading" class="p-5 text-center text-sm text-gray-500">
@@ -123,6 +121,7 @@ const sessions = ref<Session[]>([])
 const recentActivity = ref<ActivityLog[]>([])
 const loading = ref(true)
 const userName = computed(() => authStore.user?.name || authStore.user?.email)
+const twoFactorEnabled = computed(() => authStore.user?.twoFactorEnabled ?? true)
 
 const lastLogin = computed(() =>
   recentActivity.value.find((log) => log.action === 'LOGIN_SUCCESS'),
@@ -193,11 +192,13 @@ function isMobile(ua: string | null): boolean {
 }
 
 const actionLabels: Record<string, string> = {
-  LOGIN_SUCCESS: 'Successful login',
-  LOGIN_FAILURE: 'Failed login attempt',
-  LOGOUT: 'Logged out',
-  TOKEN_REFRESH: 'Token refreshed',
-  PASSWORD_CHANGE: 'Password changed',
+  LOGIN_SUCCESS: 'Connexion réussie',
+  LOGIN_FAILURE: 'Échec de connexion',
+  LOGOUT: 'Déconnexion',
+  TOKEN_REFRESH: 'Token rafraîchi',
+  PASSWORD_CHANGE: 'Mot de passe modifié',
+  TWO_FACTOR_ENABLED: 'Authentification à deux facteurs activée',
+  TWO_FACTOR_DISABLED: 'Authentification à deux facteurs désactivée',
 }
 
 function formatAction(action: string): string {

@@ -1,7 +1,7 @@
 # =========================================
 # Stage 1: Build the NestJS Application
 # =========================================
-ARG NODE_VERSION=20.19.6
+ARG NODE_VERSION=22.13.0
 ARG NGINX_VERSION=alpine3.22
 
 FROM node:${NODE_VERSION}-alpine AS builder

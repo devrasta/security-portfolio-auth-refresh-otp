@@ -23,11 +23,7 @@
             class="relative flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4"
           >
             <div class="relative flex h-16 shrink-0 items-center">
-              <img
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                alt="Your Company"
-                class="h-8 w-auto"
-              />
+              <ShieldCheck :size="20" />
             </div>
             <nav class="relative flex flex-1 flex-col">
               <ul role="list" class="flex flex-1 flex-col gap-y-7">
@@ -109,11 +105,7 @@
       class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4"
     >
       <div class="flex h-16 shrink-0 items-center">
-        <img
-          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-          alt="Your Company"
-          class="h-8 w-auto"
-        />
+        <ShieldCheck :size="30" /> AuthSystem
       </div>
       <nav class="flex flex-1 flex-col">
         <ul role="list" class="flex flex-1 flex-col gap-y-7">
@@ -138,7 +130,7 @@
                         : 'text-gray-400 group-hover:text-indigo-600'
                     "
                   />
-                  Dashboard
+                  Tableau de bord
                 </RouterLink>
               </li>
               <li>
@@ -147,7 +139,7 @@
                   class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                 >
                   <Users aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600" />
-                  Profile
+                  Profil
                 </RouterLink>
               </li>
               <li>
@@ -156,7 +148,7 @@
                   class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                 >
                   <ShieldCheck aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600" />
-                  Security
+                  Securité
                 </RouterLink>
               </li>
               <li>
@@ -165,7 +157,7 @@
                   class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                 >
                   <ClipboardList aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600" />
-                  Activity
+                  Activités
                 </RouterLink>
               </li>
             </ul>
@@ -235,7 +227,7 @@
 
 <script setup lang="ts">
 import { RouterView, RouterLink, useRouter } from 'vue-router'
-import { X, House, Users, ShieldCheck, Bell, ClipboardList, LogOut, Menu } from 'lucide-vue-next'
+import { X, House, Users, ShieldCheck, ClipboardList, LogOut, Menu } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/auth.store'
 

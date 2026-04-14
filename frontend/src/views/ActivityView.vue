@@ -9,7 +9,7 @@
     <div class="mt-6 flex items-center gap-3">
       <select
         v-model="selectedAction"
-        class="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        class="select select-neutral"
         @change="resetAndLoad"
       >
         <option value="">Toutes les actions</option>
@@ -140,6 +140,8 @@ const actionLabels: Record<string, string> = {
   LOGOUT: 'Déconnexion',
   TOKEN_REFRESH: 'Token rafraîchi',
   PASSWORD_CHANGE: 'Mot de passe modifié',
+  TWO_FACTOR_ENABLED: 'Authentification à deux facteurs activée',
+  TWO_FACTOR_DISABLED: 'Authentification à deux facteurs désactivée',
 }
 
 function formatAction(action: string): string {

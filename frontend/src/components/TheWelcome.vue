@@ -1,23 +1,21 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { ShieldCheck } from 'lucide-vue-next';
 </script>
 
 <template>
   <div class="bg-white">
-    <!-- Header -->
     <header class="absolute inset-x-0 top-0 z-50">
       <nav aria-label="Global" class="flex items-center justify-between p-6 lg:px-8">
         <div class="flex lg:flex-1">
           <a href="#" class="-m-1.5 p-1.5 flex items-center gap-2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-8 w-8 text-indigo-600">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-            </svg>
+            <ShieldCheck :size="20" />
             <span class="text-lg font-semibold text-gray-900">AuthSystem</span>
           </a>
         </div>
-        <div class="hidden lg:flex lg:flex-1 lg:justify-end gap-x-6">
+        <div class="hidden lg:flex lg:flex-1 lg:justify-end gap-x-6 items-center">
           <RouterLink to="/login" class="text-sm/6 font-semibold text-gray-900 hover:text-indigo-600">
-            Se connecter <span aria-hidden="true">&rarr;</span>
+            Se connecter
           </RouterLink>
           <RouterLink to="/register" class="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500">
             Créer un compte
@@ -55,7 +53,7 @@ import { RouterLink } from 'vue-router'
                   Créer un compte
                 </RouterLink>
                 <RouterLink to="/login" class="text-sm/6 font-semibold text-gray-900">
-                  Se connecter <span aria-hidden="true">→</span>
+                  Se connecter
                 </RouterLink>
               </div>
             </div>
@@ -173,7 +171,7 @@ import { RouterLink } from 'vue-router'
               Commencer
             </RouterLink>
             <RouterLink to="/login" class="text-sm/6 font-semibold text-gray-900">
-              Se connecter <span aria-hidden="true">→</span>
+              Se connecter
             </RouterLink>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { HashService } from '@/modules/security/hash.service';
 import { TokenService } from '@/modules/security/token.service';
 import { ValidationService } from '@/modules/security/validation.service';
 import { JwtManagerService } from '@/modules/security/jwtManager.service';
+
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as crypto from 'crypto';
@@ -134,30 +135,13 @@ export class AuthService {
     tokenFamily,
     deviceInfo,
   }: IRefreshTokenPayload) {
-    const jti = crypto.randomBytes(16).toString('hex');
-
-    const refreshToken = await this.jwtService.generateRefreshToken(
-      userId,
-      tokenFamily,
-    );
-
-    await this.prisma.refreshToken.create({
-      data: {
-        jti,
-        userId,
-        token: this.hashService.hashToken(refreshToken),
-        tokenFamily,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        isRevoked: false,
-        deviceId: deviceInfo?.deviceId,
-        userAgent: Array.isArray(deviceInfo?.userAgent)
-          ? deviceInfo.userAgent.join(', ')
-          : deviceInfo?.userAgent,
-        ipAddress: deviceInfo?.ipAddress,
-      },
+    return this.jwtService.generateRefreshToken(userId, tokenFamily, {
+      deviceId: deviceInfo?.deviceId,
+      userAgent: Array.isArray(deviceInfo?.userAgent)
+        ? deviceInfo.userAgent.join(', ')
+        : deviceInfo?.userAgent,
+      ipAddress: deviceInfo?.ipAddress,
     });
-
-    return refreshToken;
   }
 
   async verifyRefreshToken(token: string) {
