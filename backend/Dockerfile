@@ -82,11 +82,13 @@ RUN mkdir -p /var/log/nginx /var/lib/nginx /run/nginx && \
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Copy and configure entrypoint
+COPY entrypoint.sh ./entrypoint.sh
+
 # Switch to node user
 USER node
 
 # Expose port 4001
 EXPOSE 4001
 
-# Run migrations then start both NestJS and Nginx
-CMD sh -c "npx prisma migrate deploy && node dist/main.js & nginx -g 'daemon off;'"
+ENTRYPOINT ["sh", "entrypoint.sh"]
