@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/root/.yarn yarn install --frozen-lockfile
 # Explicit COPY of src/ ensures Docker cache is invalidated on source changes
 COPY public/ ./public/
 COPY src/ ./src/
-COPY index.html tsconfig*.json vite.config.ts ./
+COPY index.html tsconfig*.json vite.config.ts env.d.ts ./
 
 # Accept build argument for Vite API URL
 ARG VITE_API_URL
@@ -36,8 +36,8 @@ ENV VITE_API_URL=${VITE_API_URL}
 # Debug: Show environment variables
 RUN echo "Building with VITE_API_URL=${VITE_API_URL}"
 
-# Build the Vue.js application
-RUN yarn build || (cat /tmp/yarn-error.log 2>/dev/null && exit 1)
+# Build the Vue.js application (type-check runs in CI, not here)
+RUN yarn build-only
 
 # =========================================
 # Stage 2: Prepare Nginx to Serve Static Files
