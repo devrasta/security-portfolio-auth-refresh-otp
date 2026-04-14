@@ -48,7 +48,11 @@ const handleSubmit = async (event: Event) => {
 
   isSubmitting.value = true
   try {
-    await login(result.output)
+    const loginResponse = await login(result.output)
+    console.log("loginResponse", loginResponse)
+    if(loginResponse?.twoFactorRequired) {
+      return router.push('/login/totp')
+    }
     router.push('/dashboard');
   } catch (error) {
     resultResponse.value = error instanceof Error ? error.message : 'Une erreur est survenue';

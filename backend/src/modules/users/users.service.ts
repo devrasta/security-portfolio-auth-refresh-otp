@@ -73,4 +73,16 @@ export class UsersService {
     });
     return updated;
   }
+
+  async getProfile(userId: string): Promise<Partial<User>> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        name: true,
+        twoFactorEnabled: true,
+        createdAt: true,
+      },
+    });
+  }
 }

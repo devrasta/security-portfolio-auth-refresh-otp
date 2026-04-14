@@ -9,7 +9,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService, ILoginSuccess } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
@@ -48,7 +48,6 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Throttle({ loginByEmail: {} })
   @UseGuards(MailThrottlerGuard)
   @Post('login')
   async logIn(
@@ -62,10 +61,14 @@ export class AuthController {
       ipAddress: req.ip,
     };
     try {
-      const { accessToken, refreshToken, user } = await this.authService.login(
-        loginDto,
-        deviceInfo,
-      );
+      const loginResponse = await this.authService.login(loginDto, deviceInfo);
+
+      if (loginResponse.hasOwnProperty('twoFactorRequired')) {
+        return loginResponse;
+      }
+      const { accessToken, refreshToken, user } =
+        loginResponse as ILoginSuccess;
+
       await this.activityService.logActivity({
         action: 'LOGIN_SUCCESS',
         userId: user.id,
@@ -177,5 +180,47 @@ export class AuthController {
     });
 
     return { message: 'Logged out successfully' };
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('login/2fa')
+  async loginWith2FA(
+    @Body() body: { accessToken: string; code: string },
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      const result = await this.authService.loginWith2FA(
+        body.accessToken,
+        body.code,
+      );
+
+      await this.activityService.logActivity({
+        action: 'LOGIN_SUCCESS',
+        userId: result.user.id,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+      res.cookie(
+        'refreshToken',
+        this.cryptoService.encrypt(result.refreshToken),
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: days(7),
+        },
+      );
+
+      return { accessToken: result.accessToken, user: result.user };
+    } catch (error) {
+      await this.activityService.logActivity({
+        action: 'LOGIN_FAILURE',
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+        userId: req.user ? req.user['userId'] : null,
+      });
+      throw error;
+    }
   }
 }

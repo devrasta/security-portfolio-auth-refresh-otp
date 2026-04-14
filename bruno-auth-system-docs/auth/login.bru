@@ -19,8 +19,30 @@ body:json {
 
 script:post-response {
   if (res.status === 200) {
-    bru.setVar("access_token", res.body.accessToken);
+    if (res.body.twoFactorRequired) {
+      // Flux 2FA : stocker le token temporaire pour l'etape /auth/login/2fa
+      bru.setVar("two_factor_temp_token", res.body.accessToken);
+    } else {
+      bru.setVar("access_token", res.body.accessToken);
+    }
   }
+}
+
+docs {
+  # Login
+
+  Authentifie l'utilisateur avec email et mot de passe.
+
+  **Reponse normale** (2FA desactive) :
+  - `accessToken` : JWT d'acces (15 min)
+  - `user` : `{ id, name }`
+  - Le refresh token est set dans le cookie httpOnly `refreshToken`
+
+  **Reponse 2FA** (si 2FA active sur le compte) :
+  - `accessToken` : token temporaire (short-lived) a passer a `/auth/login/2fa`
+  - `twoFactorRequired` : `true`
+
+  **Throttling** : 120 req/min par IP (guard `MailThrottlerGuard`)
 }
 
 settings {

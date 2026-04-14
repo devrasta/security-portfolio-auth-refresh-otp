@@ -12,6 +12,18 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { TwoFactorService } from './two-factor.service';
+
+export interface ILoginSuccess {
+  accessToken: string;
+  refreshToken: string;
+  user: { id: string; name: string };
+}
+
+export interface ILoginTwoFactorChallenge {
+  accessToken: string;
+  twoFactorRequired: boolean;
+}
 
 interface IRefreshTokenPayload {
   userId: string;
@@ -30,6 +42,7 @@ interface IDeviceInfo {
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly twoFactorService: TwoFactorService,
     private hashService: HashService,
     private jwtService: JwtManagerService,
     private validationService: ValidationService,
@@ -66,7 +79,10 @@ export class AuthService {
     });
   }
 
-  async login(loginParams: LoginDto, deviceInfo?: IDeviceInfo) {
+  async login(
+    loginParams: LoginDto,
+    deviceInfo?: IDeviceInfo,
+  ): Promise<ILoginSuccess | ILoginTwoFactorChallenge> {
     const tokenFamily = crypto.randomUUID();
     const user = await this.usersService.findByEmail(loginParams.email);
 
@@ -81,6 +97,17 @@ export class AuthService {
 
     if (!isValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+    const isTwoFactorEnabled = await this.twoFactorService.isTwoFactorEnabled(
+      user.id,
+    );
+    console.log('User 2FA status:', isTwoFactorEnabled);
+    if (isTwoFactorEnabled) {
+      const accessToken = this.jwtService.generateAccessToken({
+        userId: user.id,
+        email: user.email,
+      });
+      return { accessToken, twoFactorRequired: true };
     }
 
     const [accessToken, refreshToken] = await Promise.all([
@@ -202,5 +229,48 @@ export class AuthService {
       where: { userId, isRevoked: false },
       data: { isRevoked: true },
     });
+  }
+
+  async loginWith2FA(
+    temporaryToken: string,
+    twoFactorCode: string,
+  ): Promise<ILoginSuccess> {
+    let payload: any;
+    try {
+      payload = this.jwtService.verifyAccessToken(temporaryToken);
+    } catch {
+      throw new UnauthorizedException('Invalid or expired temporary token');
+    }
+
+    const isValid = await this.twoFactorService.verifyCode(
+      payload.sub,
+      twoFactorCode,
+    );
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid 2FA code');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+    const tokenFamily = crypto.randomUUID();
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.generateAccessToken({
+        userId: user.id,
+        email: user.email,
+      }),
+      this.generateRefreshToken({
+        userId: user.id,
+        tokenFamily,
+        deviceInfo: {} as IDeviceInfo,
+      }),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: { id: user.id, name: user.name },
+    };
   }
 }

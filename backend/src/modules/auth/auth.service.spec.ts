@@ -7,6 +7,7 @@ import { ValidationService } from '@/modules/security/validation.service';
 import { TokenService } from '@/modules/security/token.service';
 import { UsersService } from '@/modules/users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { TwoFactorService } from './two-factor.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -16,6 +17,7 @@ describe('AuthService', () => {
   let tokenService: any;
   let usersService: any;
   let prisma: any;
+  let twoFactorService: any;
 
   const mockHashService = {
     hashPassword: jest.fn().mockResolvedValue('$argon2-hashed'),
@@ -52,6 +54,14 @@ describe('AuthService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
+  };
+
+  const mockTwoFactorService = {
+    isTwoFactorEnabled: jest.fn(),
+    verifyCode: jest.fn(),
   };
 
   const mockUser = {
@@ -71,6 +81,7 @@ describe('AuthService', () => {
         { provide: TokenService, useValue: mockTokenService },
         { provide: UsersService, useValue: mockUsersService },
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: TwoFactorService, useValue: mockTwoFactorService },
       ],
     }).compile();
 
@@ -81,6 +92,7 @@ describe('AuthService', () => {
     tokenService = module.get(TokenService);
     usersService = module.get(UsersService);
     prisma = module.get(PrismaService);
+    twoFactorService = module.get(TwoFactorService);
     jest.clearAllMocks();
   });
 
@@ -190,6 +202,7 @@ describe('AuthService', () => {
       hashService.verifyPassword.mockResolvedValue(true);
       jwtService.generateAccessToken.mockReturnValue('access-jwt');
       prisma.refreshToken.create.mockResolvedValue({});
+      mockTwoFactorService.isTwoFactorEnabled.mockResolvedValue(false);
     });
 
     it('should find user by email', async () => {
@@ -230,6 +243,18 @@ describe('AuthService', () => {
 
     it('should handle missing deviceInfo gracefully', async () => {
       await expect(service.login(loginDto)).resolves.toBeDefined();
+    });
+
+    it('should return twoFactorRequired challenge when 2FA is enabled', async () => {
+      mockTwoFactorService.isTwoFactorEnabled.mockResolvedValue(true);
+      jwtService.generateAccessToken.mockReturnValue('temp-access-token');
+
+      const result = await service.login(loginDto, deviceInfo);
+
+      expect(result).toEqual({
+        twoFactorRequired: true,
+        accessToken: expect.any(String),
+      });
     });
   });
 
@@ -527,6 +552,64 @@ describe('AuthService', () => {
       await expect(service.changePassword(params)).rejects.toThrow();
       expect(usersService.updatePassword).not.toHaveBeenCalled();
       expect(prisma.refreshToken.updateMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('loginWith2FA', () => {
+    const temporaryToken = 'temp-jwt-token';
+    const twoFactorCode = '123456';
+    const jwtPayload = { sub: 'user-123', email: 'test@example.com' };
+
+    beforeEach(() => {
+      jwtService.verifyAccessToken = jest.fn().mockReturnValue(jwtPayload);
+      mockTwoFactorService.verifyCode.mockResolvedValue(true);
+      prisma.user.findUnique.mockResolvedValue(mockUser);
+      jwtService.generateAccessToken.mockReturnValue('new-access-token');
+      jwtService.generateRefreshToken.mockResolvedValue('new-refresh-token');
+      prisma.refreshToken.create.mockResolvedValue({});
+      hashService.hashToken.mockReturnValue('hashed-token');
+    });
+
+    it('should throw UnauthorizedException when temporary token is invalid', async () => {
+      jwtService.verifyAccessToken.mockImplementation(() => {
+        throw new Error('jwt expired');
+      });
+
+      await expect(
+        service.loginWith2FA(temporaryToken, twoFactorCode),
+      ).rejects.toThrow(UnauthorizedException);
+      await expect(
+        service.loginWith2FA(temporaryToken, twoFactorCode),
+      ).rejects.toThrow('Invalid or expired temporary token');
+    });
+
+    it('should throw UnauthorizedException when 2FA code is invalid', async () => {
+      mockTwoFactorService.verifyCode.mockResolvedValue(false);
+
+      await expect(
+        service.loginWith2FA(temporaryToken, twoFactorCode),
+      ).rejects.toThrow(UnauthorizedException);
+      await expect(
+        service.loginWith2FA(temporaryToken, twoFactorCode),
+      ).rejects.toThrow('Invalid 2FA code');
+    });
+
+    it('should find the user by id from the JWT payload sub', async () => {
+      await service.loginWith2FA(temporaryToken, twoFactorCode);
+
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: jwtPayload.sub },
+      });
+    });
+
+    it('should return accessToken, refreshToken and user on success', async () => {
+      const result = await service.loginWith2FA(temporaryToken, twoFactorCode);
+
+      expect(result).toEqual({
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token',
+        user: { id: mockUser.id, name: mockUser.name },
+      });
     });
   });
 });

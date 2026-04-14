@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import * as v from 'valibot'
 import { useSeoMeta } from '@unhead/vue'
 import { useAuthStore } from '../stores/auth.store'
@@ -24,49 +24,39 @@ const totpSchema = v.object({
 
 type TotpForm = v.InferOutput<typeof totpSchema>
 
-const qrCode = ref<string | null>(null)
-const secret = ref<string | null>(null)
 const form = ref<TotpForm>({ code: '' })
 const codeError = ref<string | undefined>(undefined)
-const isLoadingQr = ref(true)
 const isSubmitting = ref(false)
 const resultResponse = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
-// onMounted(async () => {
-//   try {
-//     const data = await twoFactorApi.setup(authStore.accessToken as string)
-//     qrCode.value = data.qrCode
-//     secret.value = data.secret
-//   } catch (error) {
-//     resultResponse.value = error instanceof Error ? error.message : 'Impossible de charger le QR code'
-//   } finally {
-//     isLoadingQr.value = false
-//   }
-// })
 
 const handleSubmit = async (event: Event) => {
   event.preventDefault()
-  // codeError.value = undefined
-  // resultResponse.value = null
-  // successMessage.value = null
+  codeError.value = undefined
+  resultResponse.value = null
+  successMessage.value = null
 
-  // const result = v.safeParse(totpSchema, form.value)
-  // if (!result.success) {
-  //   codeError.value = v.flatten(result.issues).nested?.code?.[0]
-  //   return
-  // }
+  const result = v.safeParse(totpSchema, form.value)
+  if (!result.success) {
+    codeError.value = v.flatten(result.issues).nested?.code?.[0]
+    return
+  }
 
-  // isSubmitting.value = true
-  // try {
-  //   await twoFactorApi.enable(authStore.accessToken as string, result.output.code)
-  //   successMessage.value = 'Double authentification activée avec succès !'
-  //   setTimeout(() => router.push('/security'), 2000)
-  // } catch (error) {
-  //   resultResponse.value = error instanceof Error ? error.message : 'Une erreur est survenue'
-  // } finally {
-  //   isSubmitting.value = false
-  // }
+  isSubmitting.value = true
+  try {
+    const isVerified = await twoFactorApi.verify(authStore.accessToken as string, result.output.code)
+    if (isVerified) {
+      successMessage.value = 'Double authentification vérifiée avec succès ! Redirection en cours...'
+      setTimeout(() => router.push('/dashboard'), 2000)
+    } else {
+      resultResponse.value = 'Code de vérification invalide'
+    }
+  } catch (error) {
+    resultResponse.value = error instanceof Error ? error.message : 'Une erreur est survenue'
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 
@@ -100,8 +90,8 @@ const handleSubmit = async (event: Event) => {
 
         <button
           type="submit"
-          :disabled="isSubmitting || isLoadingQr"
-          :class="['submit-btn', (isSubmitting || isLoadingQr) ? 'submit-btn--loading' : 'submit-btn--active']"
+          :disabled="isSubmitting"
+          :class="['submit-btn', isSubmitting ? 'submit-btn--loading' : 'submit-btn--active']"
         >
           {{ isSubmitting ? 'Vérification...' : 'Valider le code' }}
         </button>

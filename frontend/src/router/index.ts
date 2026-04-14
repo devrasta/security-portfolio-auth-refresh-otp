@@ -79,7 +79,7 @@ router.beforeEach(async (to) => {
     }
   }
 
-  const publicPages = ['/login', '/register', '/', '/about']
+  const publicPages = ['/login', '/login/totp', '/register', '/', '/about']
   if (!authStore.isAuthenticated && !publicPages.includes(to.path)) {
     return { name: 'login' }
   }

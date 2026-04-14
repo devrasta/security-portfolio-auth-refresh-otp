@@ -7,10 +7,12 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { TwoFactorService } from './two-factor.service';
 import { CurrentUser } from '../security/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../security/guards/jwt-auth.guard';
 import { Enable2FADto } from './dto/enable-2fa.dto';
+import { Disable2FADto } from './dto/disable-2fa.dto';
 // import { Enable2FADto } from './dto/enable-2fa.dto';
 
 @Controller('auth/2fa')
@@ -34,5 +36,23 @@ export class TwoFactorController {
     @CurrentUser('userId') userId: string,
   ) {
     return this.twoFactorService.enableTwoFactor(userId, enableDto.code);
+  }
+
+  @Get('status')
+  @UseGuards(JwtAuthGuard)
+  @SkipThrottle({ default: true, loginByEmail: true })
+  async status(@CurrentUser('userId') userId: string) {
+    const isEnabled = await this.twoFactorService.isTwoFactorEnabled(userId);
+    return { isEnabled };
+  }
+
+  @Post('disable')
+  @UseGuards(JwtAuthGuard)
+  async disable(
+    @Body() disableDto: Disable2FADto,
+    @CurrentUser('userId') userId: string,
+  ) {
+    await this.twoFactorService.disableTwoFactor(userId, disableDto.code);
+    return { message: 'Two-factor authentication disabled' };
   }
 }

@@ -14,6 +14,11 @@ export interface AuthResponse {
   user: User
 }
 
+export interface ILoginTwoFactorChallenge {
+  twoFactorRequired: boolean
+  accessToken: string
+}
+
 export interface User {
   id: string
   email: string
@@ -112,7 +117,7 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 // ════════════════════════════════════════════════════════
 
 export const authApi = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<ILoginTwoFactorChallenge | AuthResponse> {
     return fetchApi<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
@@ -203,14 +208,38 @@ export const twoFactorApi = {
     })
   },
 
-  async enable(accessToken: string, code: string): Promise<{ message: string }> {
-    return fetchApi<{ message: string }>('/auth/2fa/enable', {
+  async enable(accessToken: string, code: string): Promise<{ backupCodes: string[] }> {
+    return fetchApi<{ backupCodes: string[] }>('/auth/2fa/enable', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ code }),
     })
+  },
+
+  async status(accessToken: string): Promise<{ isEnabled: boolean }> {
+    return fetchApi<{ isEnabled: boolean }>('/auth/2fa/status', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+
+  async verify(accessToken: string, code: string): Promise<boolean> {
+    try {
+      await fetchApi('/auth/login/2fa', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ accessToken, code }),
+      })
+      return true
+    } catch (error) {
+      return false
+    }
   },
 }
 

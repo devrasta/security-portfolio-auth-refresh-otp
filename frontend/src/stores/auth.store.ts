@@ -48,11 +48,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(loginCredentials: LoginCredentials) {
-    const response = await authApi.login(loginCredentials)
-    accessToken.value = response.accessToken
-    user.value = response.user
-    localStorage.setItem('accessToken', response.accessToken)
-    localStorage.setItem('user', JSON.stringify(response.user))
+    const loginResponse = await authApi.login(loginCredentials)
+    if ('twoFactorRequired' in loginResponse) {
+      accessToken.value = loginResponse.accessToken
+      localStorage.setItem('accessToken', loginResponse.accessToken)
+      return { twoFactorRequired: true }
+    }
+    accessToken.value = loginResponse.accessToken
+    user.value = loginResponse.user
+    localStorage.setItem('accessToken', loginResponse.accessToken)
+    localStorage.setItem('user', JSON.stringify(loginResponse.user))
   }
 
   function register(userToCreate: RegisterCredentials) {

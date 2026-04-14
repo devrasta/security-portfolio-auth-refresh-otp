@@ -13,17 +13,30 @@ export class ActivityService {
     userAgent: string;
   }) {
     let location = {};
-    try {
-      const response = await fetch(`https://ipapi.co/${dto.ipAddress}/json/`, {
-        signal: AbortSignal.timeout(2000),
-      });
-      const data = await response.json();
-      location = {
-        country: data.country_name,
-        city: data.city,
-      };
-    } catch (error) {
-      console.error('Failed to fetch location data:', error);
+    const isLocalIp =
+      !dto.ipAddress ||
+      dto.ipAddress === '::1' ||
+      dto.ipAddress === '127.0.0.1' ||
+      dto.ipAddress.startsWith('192.168.') ||
+      dto.ipAddress.startsWith('10.') ||
+      dto.ipAddress.startsWith('172.');
+    if (!isLocalIp) {
+      try {
+        const response = await fetch(
+          `https://ipapi.co/${dto.ipAddress}/json/`,
+          { signal: AbortSignal.timeout(2000) },
+        );
+        const contentType = response.headers.get('content-type') || '';
+        if (response.ok && contentType.includes('application/json')) {
+          const data = await response.json();
+          location = {
+            country: data.country_name,
+            city: data.city,
+          };
+        }
+      } catch (error) {
+        console.error('Failed to fetch location data:', error);
+      }
     }
 
     return this.prisma.activityLog.create({

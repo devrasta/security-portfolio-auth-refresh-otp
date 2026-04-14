@@ -91,17 +91,17 @@
             </p>
           </div>
           <span
-            :class="authStore.user?.twoFactorEnabled
+            :class="totpEnabled
               ? 'bg-green-100 text-green-700'
               : 'bg-gray-100 text-gray-600'"
             class="ml-4 shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
           >
-            {{ authStore.user?.twoFactorEnabled ? 'Activée' : 'Désactivée' }}
+            {{ totpEnabled ? 'Activée' : 'Désactivée' }}
           </span>
         </div>
 
         <!-- Already enabled -->
-        <div v-if="authStore.user?.twoFactorEnabled" class="mt-4 rounded-md bg-green-50 p-4">
+        <div v-if="totpEnabled" class="mt-4 rounded-md bg-green-50 p-4">
           <p class="text-sm text-green-700">
             L'authentification à deux facteurs est active sur votre compte.
           </p>
@@ -155,7 +155,6 @@
             <div v-if="twoFaError" class="rounded-md bg-red-50 p-3">
               <p class="text-sm text-red-700">{{ twoFaError }}</p>
             </div>
-
             <div class="flex gap-3">
               <button
                 :disabled="isEnabling"
@@ -172,14 +171,27 @@
               </button>
             </div>
           </div>
+
         </div>
       </div>
+
+            <div class="bg-white shadow rounded-lg p-6">
+              <h3 class="text-md font-medium text-gray-900 mb-2">Codes de secours temporaires</h3>
+              <h4 class="text-sm text-gray-700">
+                Ces codes de secours sont affichés <b>une seule fois</b> après l'activation de l'authentification à deux facteurs. <br/>
+                Ils vous permettront d'accéder à votre compte si vous perdez l'accès à votre application d'authentification.<br/>
+                <b>Veuillez les sauvegarder dans un endroit sûr.</b>
+              </h4>
+              <p class="text-sm text-gray-700" v-for="code in tempBackupCodes" :key="code">
+                {{ code }}
+              </p>
+            </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import {  onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { authApi, twoFactorApi, ApiError } from '@/services/api/auth.api'
 import PasswordStrength from '@/components/PasswordStrength.vue'
@@ -275,6 +287,8 @@ const twoFaSuccess = ref('')
 const twoFaError = ref('')
 const isLoadingQr = ref(false)
 const isEnabling = ref(false)
+const tempBackupCodes = ref<string[]>([])
+const totpEnabled = ref(false)
 
 async function startSetup() {
   setupError.value = ''
@@ -309,15 +323,24 @@ async function confirmEnable() {
 
   isEnabling.value = true
   try {
-    await twoFactorApi.enable(authStore.accessToken!, totpCode.value)
+    const { backupCodes } = await twoFactorApi.enable(authStore.accessToken!, totpCode.value)
     authStore.setTwoFactorEnabled(true)
     twoFaSuccess.value = 'Authentification à deux facteurs activée avec succès !'
     qrCode.value = null
     totpCode.value = ''
+    tempBackupCodes.value = backupCodes
   } catch (error) {
     twoFaError.value = error instanceof ApiError ? error.message : 'Une erreur est survenue, veuillez réessayer.'
   } finally {
     isEnabling.value = false
   }
 }
+onMounted(() => {
+  if (authStore.accessToken) {
+    twoFactorApi.status(authStore.accessToken).then(({ isEnabled }) => {
+      authStore.setTwoFactorEnabled(isEnabled)
+      totpEnabled.value = isEnabled;
+    })
+  }
+})
 </script>

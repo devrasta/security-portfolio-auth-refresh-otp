@@ -61,7 +61,9 @@ export class JwtManagerService {
   }
 
   verifyAccessToken(token: string): JwtPayload {
-    return this.nestJwtService.verify(token, this.config.get('JWT_SECRET'));
+    return this.nestJwtService.verify(token, {
+      secret: this.config.get('JWT_SECRET'),
+    });
   }
 
   async verifyRefreshToken(token: string) {

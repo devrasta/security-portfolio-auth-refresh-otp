@@ -3,12 +3,14 @@ import { generateSecret, generateURI, verify } from 'otplib';
 import { toDataURL } from 'qrcode';
 import { PrismaService } from '../prisma/prisma.service';
 import { HashService } from '../security/hash.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class TwoFactorService {
   constructor(
     private prisma: PrismaService,
     private hashService: HashService,
+    private userService: UsersService,
   ) {}
 
   generateBackupCodes(count: number): string[] {
@@ -61,7 +63,8 @@ export class TwoFactorService {
       );
     }
 
-    // ✅ Vérifier le token TOTP
+    await this.userService.toggleTwoFactor(userId, true);
+
     const result = await verify({
       secret: twoFactorSecret.secret,
       token,
@@ -72,7 +75,6 @@ export class TwoFactorService {
     }
     const backupCodes = this.generateBackupCodes(10);
 
-    // Hasher avec argon2
     const hashedCodes = await Promise.all(
       backupCodes.map((code) => this.hashService.hashPassword(code)),
     );
@@ -98,18 +100,15 @@ export class TwoFactorService {
       return false;
     }
 
-    if (token.length === 6 && /^\d{6}$/.test(token)) {
-      // ✅ CORRECT: Vérifier TOTP
+    if (token.length === 6) {
       const verifyResult = await verify({
         secret: twoFactorSecret.secret,
         token,
       });
       return verifyResult.valid;
     } else if (token.length === 8 && /^[A-F0-9]{8}$/i.test(token)) {
-      // Vérifier backup code
       return this.verifyBackupCode(userId, token.toUpperCase());
     }
-
     return false;
   }
 
@@ -123,7 +122,6 @@ export class TwoFactorService {
       return false;
     }
 
-    // Vérifier si le code est dans la liste des codes de secours
     const isBackupCodeValid = twoFactorSecret.backupCodes.some((hashedCode) =>
       this.hashService.verifyPassword(hashedCode, code),
     );
@@ -137,5 +135,27 @@ export class TwoFactorService {
     });
 
     return !!twoFactorSecret;
+  }
+
+  async disableTwoFactor(userId: string, token: string): Promise<void> {
+    const twoFactorSecret = await this.prisma.twoFactorSecret.findUnique({
+      where: { userId, isEnabled: true },
+    });
+
+    if (!twoFactorSecret) {
+      throw new BadRequestException('2FA is not enabled');
+    }
+
+    const isValid = await this.verifyCode(userId, token);
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid 2FA code');
+    }
+
+    this.userService.toggleTwoFactor(userId, false);
+
+    await this.prisma.twoFactorSecret.delete({
+      where: { userId },
+    });
   }
 }

@@ -18,6 +18,24 @@ body:json {
   }
 }
 
+docs {
+  # Register
+
+  Cree un nouveau compte utilisateur.
+
+  **Validation** :
+  - `name` : requis
+  - `email` : format valide requis
+  - `password` : min 12 chars, max 128, doit contenir majuscule + minuscule + chiffre/special
+
+  **Throttling** : 5 req/heure par IP
+
+  **Erreurs** :
+  - 400 : email invalide
+  - 400 : mot de passe trop faible (`{ message: "Weak password", strength: 0-4 }`)
+  - 409 : email deja utilise
+}
+
 settings {
   encodeUrl: true
   timeout: 0
