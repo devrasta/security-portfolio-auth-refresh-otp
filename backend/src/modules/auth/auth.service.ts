@@ -56,10 +56,11 @@ export class AuthService {
     if (!this.validationService.isValidEmail(dto.email)) {
       throw new BadRequestException('Invalid email');
     }
-    const isStrong = await this.validationService.isStrongPassword(
+    const passStrength = this.validationService.getPasswordStrength(
       dto.password,
     );
-    if (!isStrong) {
+    console.log('Password strength check:', passStrength);
+    if (passStrength < 4) {
       const passStrength = this.validationService.getPasswordStrength(
         dto.password,
       );
