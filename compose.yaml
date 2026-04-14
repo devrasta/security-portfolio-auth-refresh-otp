@@ -17,8 +17,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    ports:
-      - "5433:5432" # Exposé pour dev local (retirer en prod)
+    # ports:
+    #   - "5433:5432" # Dev local uniquement — à ne pas exposer en prod
 
   # Redis Cache
   auth-redis:
@@ -30,8 +30,8 @@ services:
       - auth-internal
     volumes:
       - auth-redis-data:/data
-    ports:
-      - "6380:6379" # Exposé pour dev local
+    # ports:
+    #   - "6380:6379" # Dev local uniquement
 
   # Backend NestJS
   auth-backend:
@@ -55,8 +55,10 @@ services:
         condition: service_started
     networks:
       - auth-internal
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
+    # ports:
+    #   - "3000:3000" # Dev local uniquement — Coolify route via Traefik
 
   # Frontend Vue 3
   auth-frontend:
@@ -71,8 +73,10 @@ services:
       - ./frontend/.env
     networks:
       - auth-internal
-    ports:
-      - "5174:8080"
+    expose:
+      - "8080"
+    # ports:
+    #   - "5174:8080" # Dev local uniquement
 
 networks:
   auth-internal:
