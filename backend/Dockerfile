@@ -72,6 +72,8 @@ RUN apk add --no-cache nginx
 COPY --from=builder /app/dist ./dist
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
+# Copy prisma schema and migrations (required for migrate deploy at runtime)
+COPY --from=builder /app/prisma ./prisma
 
 # Create necessary directories and set permissions for node user
 RUN mkdir -p /var/log/nginx /var/lib/nginx /run/nginx && \
@@ -86,5 +88,5 @@ USER node
 # Expose port 4001
 EXPOSE 4001
 
-# Start both NestJS and Nginx
-CMD sh -c "node dist/main.js & nginx -g 'daemon off;'"
+# Run migrations then start both NestJS and Nginx
+CMD sh -c "npx prisma migrate deploy && node dist/main.js & nginx -g 'daemon off;'"
