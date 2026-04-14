@@ -100,11 +100,70 @@
           </span>
         </div>
 
+        <!-- Disable 2FA modal -->
+        <dialog id="disable-2fa-modal" class="modal">
+          <div class="modal-box">
+            <h3 class="text-lg font-bold text-gray-900">Désactiver la 2FA</h3>
+            <p class="mt-2 text-sm text-gray-600">
+              Pour confirmer la désactivation, saisissez le code à 6 chiffres de votre application d'authentification.
+            </p>
+            <div class="mt-4">
+              <label for="disableCode" class="block text-sm font-medium text-gray-700">Code de vérification</label>
+              <input
+                id="disableCode"
+                v-model="disableCode"
+                type="text"
+                inputmode="numeric"
+                pattern="\d{6}"
+                maxlength="6"
+                autocomplete="one-time-code"
+                placeholder="123456"
+                class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-900 font-mono tracking-widest placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                :class="disableCodeError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''"
+              />
+              <p v-if="disableCodeError" class="mt-1 text-sm text-red-600">{{ disableCodeError }}</p>
+            </div>
+            <div v-if="disableError" class="mt-3 rounded-md bg-red-50 p-3">
+              <p class="text-sm text-red-700">{{ disableError }}</p>
+            </div>
+            <div class="modal-action mt-6">
+              <button
+                :disabled="isDisabling"
+                class="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="confirmDisable"
+              >
+                {{ isDisabling ? 'Désactivation…' : 'Je confirme' }}
+              </button>
+              <form method="dialog">
+                <button
+                  class="inline-flex justify-center rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  @click="cancelDisable"
+                >
+                  Annuler
+                </button>
+              </form>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button @click="cancelDisable">close</button>
+          </form>
+        </dialog>
+
         <!-- Already enabled -->
-        <div v-if="totpEnabled" class="mt-4 rounded-md bg-green-50 p-4">
-          <p class="text-sm text-green-700">
-            L'authentification à deux facteurs est active sur votre compte.
-          </p>
+        <div v-if="totpEnabled" class="mt-4 space-y-4">
+          <div class="rounded-md bg-green-50 p-4">
+            <p class="text-sm text-green-700">
+              L'authentification à deux facteurs est active sur votre compte.
+            </p>
+          </div>
+          <div>
+            <button
+              class="inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
+              @click="openDisableModal"
+            >
+              Désactiver l'authentification à deux facteurs
+            </button>
+          </div>
         </div>
 
         <!-- Setup flow -->
@@ -150,7 +209,22 @@
             </div>
 
             <div v-if="twoFaSuccess" class="rounded-md bg-green-50 p-3">
-              <p class="text-sm text-green-700">{{ twoFaSuccess }}</p>
+              <div class="text-sm text-green-700">
+                <p>{{ twoFaSuccess }}</p>
+
+                <div  v-if="tempBackupCodes.length > 0">
+                  <h3 class="text-md font-medium text-gray-900 mb-2">Codes de secours temporaires</h3>
+                  <h4 class="text-sm text-gray-700">
+                    Ces codes de secours sont affichés <b>une seule fois</b> après l'activation de l'authentification à deux facteurs. <br/>
+                    Ils vous permettront d'accéder à votre compte si vous perdez l'accès à votre application d'authentification.<br/>
+                    <b>Veuillez les sauvegarder dans un endroit sûr.</b>
+                  </h4>
+                  <p class="text-sm text-gray-700" v-for="code in tempBackupCodes" :key="code">
+                    {{ code }}
+                  </p>
+                </div>
+              </div>
+
             </div>
             <div v-if="twoFaError" class="rounded-md bg-red-50 p-3">
               <p class="text-sm text-red-700">{{ twoFaError }}</p>
@@ -175,23 +249,36 @@
         </div>
       </div>
 
-            <div class="bg-white shadow rounded-lg p-6">
-              <h3 class="text-md font-medium text-gray-900 mb-2">Codes de secours temporaires</h3>
-              <h4 class="text-sm text-gray-700">
-                Ces codes de secours sont affichés <b>une seule fois</b> après l'activation de l'authentification à deux facteurs. <br/>
-                Ils vous permettront d'accéder à votre compte si vous perdez l'accès à votre application d'authentification.<br/>
-                <b>Veuillez les sauvegarder dans un endroit sûr.</b>
-              </h4>
-              <p class="text-sm text-gray-700" v-for="code in tempBackupCodes" :key="code">
-                {{ code }}
-              </p>
-            </div>
+      <div class="rounded-md bg-green-50 p-4 text-green-700" v-if="tempBackupCodes.length > 0">
+
+                <div >
+                  <div class="flex justify-between items-center mb-2">
+
+                  <h3 class="text-md font-medium mb-2">Codes de secours temporaires</h3>
+
+                  <button @click="copyCodes" class="btn-action text-sm">
+                    {{ copied ? '✓ Copié' : '📋 Tout copier' }}
+                  </button>
+                </div>
+
+                  <p class="text-sm text-gray-700" v-for="code in tempBackupCodes" :key="code">
+                    {{ code }}
+                  </p>
+                  <h4 class="text-sm text-gray-500 mt-2">
+                    Ces codes de secours sont affichés <b>une seule fois</b>, ils vous permettront d'accéder à votre compte si vous perdez l'accès à votre application d'authentification.<br/>
+                    <b>Veuillez les sauvegarder dans un endroit sûr.</b>
+                  </h4>
+                </div>
+              </div>
+
+
+
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {  onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { authApi, twoFactorApi, ApiError } from '@/services/api/auth.api'
 import PasswordStrength from '@/components/PasswordStrength.vue'
@@ -214,6 +301,7 @@ const passwordStrength = ref(0)
 const isSubmitting = ref(false)
 const successMessage = ref('')
 const apiError = ref('')
+const copied = ref(false);
 
 watch(
   () => form.value.newPassword,
@@ -254,6 +342,18 @@ function validate(): boolean {
 
   return !errors.value.currentPassword && !errors.value.newPassword && !errors.value.confirmPassword
 }
+
+const copyCodes = async () => {
+  try {
+    await navigator.clipboard.writeText(tempBackupCodes.value.join('\n'));
+    copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 2000);
+  } catch (err) {
+    console.error('Failed to copy:', err);
+  }
+};
 
 async function handleChangePassword() {
   successMessage.value = ''
@@ -335,6 +435,49 @@ async function confirmEnable() {
     isEnabling.value = false
   }
 }
+// ── Disable 2FA ──────────────────────────────────────────
+const disableCode = ref('')
+const disableCodeError = ref('')
+const disableError = ref('')
+const isDisabling = ref(false)
+
+function openDisableModal() {
+  disableCode.value = ''
+  disableCodeError.value = ''
+  disableError.value = ''
+  const modal = document.getElementById('disable-2fa-modal') as HTMLDialogElement | null
+  modal?.showModal()
+}
+
+function cancelDisable() {
+  disableCode.value = ''
+  disableCodeError.value = ''
+  disableError.value = ''
+}
+
+async function confirmDisable() {
+  disableCodeError.value = ''
+  disableError.value = ''
+
+  if (!/^\d{6}$/.test(disableCode.value)) {
+    disableCodeError.value = 'Le code doit contenir exactement 6 chiffres.'
+    return
+  }
+
+  isDisabling.value = true
+  try {
+    await twoFactorApi.disable(authStore.accessToken!, disableCode.value)
+    authStore.setTwoFactorEnabled(false)
+    totpEnabled.value = false
+    const modal = document.getElementById('disable-2fa-modal') as HTMLDialogElement | null
+    modal?.close()
+  } catch (error) {
+    disableError.value = error instanceof ApiError ? error.message : 'Une erreur est survenue, veuillez réessayer.'
+  } finally {
+    isDisabling.value = false
+  }
+}
+
 onMounted(() => {
   if (authStore.accessToken) {
     twoFactorApi.status(authStore.accessToken).then(({ isEnabled }) => {

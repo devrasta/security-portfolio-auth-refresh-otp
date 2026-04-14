@@ -50,11 +50,6 @@ const router = createRouter({
           component: () => import('../views/SecurityView.vue'),
         },
         {
-          path: 'notifications',
-          name: 'notifications',
-          component: () => import('../views/NotificationsView.vue'),
-        },
-        {
           path: 'activity',
           name: 'activity',
           component: () => import('../views/ActivityView.vue'),

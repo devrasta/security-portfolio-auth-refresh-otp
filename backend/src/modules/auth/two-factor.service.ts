@@ -79,7 +79,6 @@ export class TwoFactorService {
       backupCodes.map((code) => this.hashService.hashPassword(code)),
     );
 
-    // Activer le 2FA
     await this.prisma.twoFactorSecret.update({
       where: { userId },
       data: {
@@ -87,7 +86,7 @@ export class TwoFactorService {
         backupCodes: hashedCodes,
       },
     });
-
+    
     return { backupCodes };
   }
 

@@ -80,6 +80,7 @@ const handleSubmit = async (event: Event) => {
               inputmode="numeric"
               pattern="\d{6}"
               maxlength="6"
+              autofocus
               autocomplete="one-time-code"
               placeholder="123456"
               :class="['form-input text-center text-xl tracking-[0.5em] font-mono', codeError ? 'form-input--error' : 'form-input--valid']"

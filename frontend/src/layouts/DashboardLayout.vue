@@ -75,15 +75,6 @@
                     </li>
                     <li>
                       <RouterLink
-                        to="/notifications"
-                        class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
-                      >
-                        <Bell aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600" />
-                        Notifications
-                      </RouterLink>
-                    </li>
-                    <li>
-                      <RouterLink
                         to="/activity"
                         class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                       >
@@ -166,15 +157,6 @@
                 >
                   <ShieldCheck aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600" />
                   Security
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink
-                  to="/notifications"
-                  class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
-                >
-                  <Bell aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600" />
-                  Notifications
                 </RouterLink>
               </li>
               <li>

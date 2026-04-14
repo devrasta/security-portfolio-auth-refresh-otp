@@ -241,6 +241,16 @@ export const twoFactorApi = {
       return false
     }
   },
+
+  async disable(accessToken: string, code: string): Promise<{ message: string }> {
+    return fetchApi<{ message: string }>('/auth/2fa/disable', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ code }),
+    })
+  },
 }
 
 // ════════════════════════════════════════════════════════
@@ -290,6 +300,28 @@ export const activityApi = {
     if (params.offset) query.set('offset', String(params.offset))
     if (params.action) query.set('action', params.action)
     return fetchApi<{ data: ActivityLog[]; total: number }>(`/activity?${query}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  },
+}
+
+// ════════════════════════════════════════════════════════
+// USERS API
+// ════════════════════════════════════════════════════════
+
+export interface UserProfile {
+  email: string
+  name: string
+  twoFactorEnabled: boolean
+  createdAt: string
+}
+
+export const usersApi = {
+  async getProfile(accessToken: string): Promise<UserProfile> {
+    return fetchApi<UserProfile>('/users/profile', {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
