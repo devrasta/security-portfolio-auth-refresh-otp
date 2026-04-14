@@ -56,9 +56,9 @@ services:
     networks:
       - auth-internal
     expose:
-      - "3000"
+      - "4001"
     # ports:
-    #   - "3000:3000" # Dev local uniquement — Coolify route via Traefik
+    #   - "4001:4001" # Dev local uniquement — Coolify route via Traefik
 
   # Frontend Vue 3
   auth-frontend:
