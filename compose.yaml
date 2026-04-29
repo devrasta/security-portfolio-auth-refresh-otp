@@ -43,7 +43,8 @@ services:
     restart: unless-stopped
     command: ${BACKEND_COMMAND:-sh -c "node dist/main.js & nginx -g 'daemon off;'"}
     env_file:
-      - ./backend/.env
+      - path: ./backend/.env
+        required: false
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@auth-db:5432/${DB_NAME}
@@ -71,7 +72,8 @@ services:
     container_name: auth-frontend
     restart: unless-stopped
     env_file:
-      - ./frontend/.env
+      - path: ./frontend/.env
+        required: false
     networks:
       - auth-internal
       - coolify
