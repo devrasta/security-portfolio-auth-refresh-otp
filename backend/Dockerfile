@@ -74,6 +74,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 # Copy prisma schema and migrations (required for migrate deploy at runtime)
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 # Create necessary directories and set permissions for node user
 RUN mkdir -p /var/log/nginx /var/lib/nginx /run/nginx && \
