@@ -61,7 +61,7 @@ import { ShieldCheck } from 'lucide-vue-next';
               <div class="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-gray-900/10 ring-inset lg:-m-4 lg:rounded-2xl lg:p-4">
                 <!-- Placeholder pour screenshot de l'app -->
                 <div class="w-full h-64 rounded-md bg-linear-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-gray-400 text-sm">
-                  Screenshot de l'application — à venir
+                  <img src="/dashboard-screenshot.png" alt="Screenshot de l'application" class="max-h-full max-w-full object-contain" />
                 </div>
               </div>
             </div>
