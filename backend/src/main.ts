@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
@@ -13,7 +13,7 @@ async function bootstrap() {
   });
 
   app.use(helmet());
-  app.use(cookieParser());
+  app.use(cookieParser(process.env.COOKIE_SECRET));
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
   app.useLogger(app.get(Logger));
   await app.listen(3000);
